@@ -1,0 +1,12 @@
+---
+title: 'Punto 1° Parcial: Ajuste de un modelo de R.L.S'
+author:
+  - Daniel Villa 1005087556
+  - Juan Pablo Vanegas 1000640165
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
