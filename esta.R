@@ -4,6 +4,7 @@ library(ggExtra)
 library(GGally)
 library(magrittr)
 library(knitr)
+library(lmtest)
 
 myQQnorm <- function(modelo, student = F, ...){
   if(student){
@@ -83,10 +84,61 @@ estaturas %>% ggplot(aes(x = genero, y = est_madre, fill =genero)) +
 
 modelo1 <- lm(data = estaturas, est_sujeto ~  genero+est_madre+est_padre)
 summary(modelo1)
+
+
+
+
+
+
+#coeficientes para el modelo
+kable(summary(modelo1)$coefficients)
+
+
+#minimos y maximos VER PRIMERO COMO QUEDA AL EXPORTAR
+kable(data.frame(apply(estaturas, 2, range), row.names = c('min', 'max')))
+
+#Significancia de la regresión
+
+kable(myAnova(modelo1))
+
+
 #normalidad con test de shapiro SIN SUMAR 1
 
 modelo1 %>% myQQnorm()
 
+#Validación del supuesto de varianza constante 
+plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
+     ylab = "Residuales", main = "Residuales vs. valores ajustados")+
+  abline(h = 0, lty = 2, col = 2)
 
 
+res.stud <- round(rstandard(modelo1), 4)
+yhat <- round(modelo1$fitted.values, 4)
+# Cálculo de errores estándar de los valores ajustados
+se.yhat <- round(predict(modelo1, se.fit = T)$se.fit, 4)
+# Residuales crudos del mod
+residuals <- round(modelo1$residuals, 4)
+# Distancias de Cook
+Cooks.D <- round(cooks.distance(modelo1), 4)
+# Valores de la diagonal de la matriz H
+hii.value <- round(hatvalues(modelo1), 4)
+# Dffits
+Dffits <- round(dffits(modelo1), 4)
+# Tabla de diagnósticos
+diganosticos <- data.frame(estaturas, yhat, se.yhat, residuals, res.stud, Cooks.D, hii.value, Dffits)
+
+#datos atipicos #POR QUE DICEN EN EL TRABAJO QUE SI LOS VALORES ESTAN ENTRE abs(3) NO TIENE DATOS ATIPICOS
+
+plot(yhat, res.stud, xlab = "Valores Ajustados", 
+     ylab = "Residuales Estudentizados", ylim = c(-3.5, 3.5), pch = 20, title("Estudentizados vs ajustados"))
+abline(h = 0, lty = 2, lwd = 2, col = 2)
+abline(h = 3)
+abline(h = -3)
+
+
+#Observacion de influencias ESTO NO RECUERDO HABERLO VISTO
+
+with(diganosticos, plot(abs(Dffits),xlab = "Observación", ylab = "Dffits",pch = 20))
+title("Análisis de influencia")
+abline(h = 2*sqrt(6/70), col = "red")
 
