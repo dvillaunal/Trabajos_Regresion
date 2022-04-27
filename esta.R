@@ -19,9 +19,12 @@ estaturas %>% ggplot(aes( x = genero, y = est_sujeto, fill = genero)) +
   geom_boxplot() + xlab("Genero") + ylab("Estatura en cm") + 
   ggtitle("Estatura por genero") #+ geom_jitter(colour = "black",width = 0.3)
 
-#proximo boxplot agrupar por padre y madre con y = estatura de cada uno
-estaturas %>% ggplot(aes( x = genero, y = est_padre, fill = genero)) + 
-  geom_boxplot() + xlab("Genero") + ylab("Estatura en cm") + 
-  ggtitle("Estatura por genero")
+#agrupar por padre y madre, decorar
+estaturas %>% ggplot(aes( y = est_padre)) + 
+  geom_boxplot()  + ylab("Estatura en cm") + 
+  ggtitle("Estatura del padre")
 
+estaturas %>% ggplot(aes( y = est_madre)) + 
+  geom_boxplot() +  ylab("Estatura en cm") + 
+  ggtitle("Estatura de la madre")
 
