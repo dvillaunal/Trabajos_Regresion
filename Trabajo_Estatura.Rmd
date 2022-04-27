@@ -1,0 +1,53 @@
+---
+title: 'Punto 2° Parcial: Ajuste de un modelo de R.L.M'
+author:
+- Daniel Villa 1005087556
+- Juan Pablo Vanegas 1000640165
+subtitle: |
+  | Universidad Nacional de Colombia
+  | Analisís de Regresión 2022-1S
+  | Medellín, Colombia
+  | 2022
+output:
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+    number_sections: yes
+    df_print: kable
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{xcolor}
+editor_options:
+  chunk_output_type: inline
+---
+
+\centering ![](templates/EscudoUN.png)
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(readr)
+estaturas <- read_csv("estaturas.csv")
+```

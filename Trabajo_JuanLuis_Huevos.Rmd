@@ -1,0 +1,275 @@
+---
+title: "Trabajo_Huevos"
+author: "Juan Gabriel Carvajal"
+date: '2022-04-16'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(magrittr)
+require(tidyverse)
+require(readxl)
+require(knitr)
+datos <- read_excel("datos_huevos.xlsx")
+```
+
+```{r echo=FALSE}
+myQQnorm <- function(modelo, student = F, ...){
+  if(student){
+    res <- rstandard(modelo)
+    lab.plot <- "Normal Q-Q Plot of Studentized Residuals"
+  } else {
+    res <- residuals(modelo)
+    lab.plot <- "Normal Q-Q Plot of Residuals"
+  }
+  shapiro <- shapiro.test(res)
+  shapvalue <- ifelse(shapiro$p.value < 0.001, "P value < 0.001", paste("P value = ", round(shapiro$p.value, 4), sep = ""))
+  shapstat <- paste("W = ", round(shapiro$statistic, 4), sep = "")
+  q <- qqnorm(res, plot.it = FALSE)
+  qqnorm(res, main = lab.plot, ...)
+  qqline(res, lty = 2, col = 2)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.95, pos = 4, 'Shapiro-Wilk Test', col = "blue", font = 2)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.80, pos = 4, shapstat, col = "blue", font = 3)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.65, pos = 4, shapvalue, col = "blue", font = 3)
+}
+```
+
+\newpage
+
+Se realizan las mediciones de 30 huevos donde se registra el ancho y largo en milímetros  y además se obtiene sus pesos, los datos se registran en la siguiente tabla. 
+
+```{r echo=FALSE}
+datos <- read_excel("datos_huevos.xlsx")
+knitr::kable(rbind(head(datos,n=3),rep(".",ncol(datos)),rep(".",ncol(datos)),
+rep(".",ncol(datos)),tail(datos,n=3)),col.names = c("ID","Ancho","Alto","Peso"),
+digits = 3,align = 'ccccccc')
+```
+
+**Análisis descriptivo de la base de datos**
+
+```{r echo=FALSE}
+datos %>% select(-"Huevos") %>% summary() %>% kable(align = 'cccccc')
+```
+La tabla anterior muestra un resumen de las variables que nos interesa analizar para nuestro modelo de regresión, veamos si existen datos atípicos en las medidas de  las variables
+
+```{r echo=FALSE}
+boxplot(datos$Diametro,main="Boxplot Diametro",col="blue")
+```
+
+$\bullet$ En la variable $\textbf{Diámetro}$ se ve un dato que esta fuera del rango donde se encuentra la mayoría de los registros, pero no lo consideramos un dato atípico porque no se encuentra lo suficientemente alejado del bigote inferior.
+
+```{r echo=FALSE}
+boxplot(datos$Altura,main="Boxplot Alto",col="red")
+```
+
+$\bullet$ Para la variable $\textbf{Altura}$ no se observan datos lejanos ni atípicos.
+
+```{r}
+boxplot(datos$Peso,main="Boxplot Peso",col="green")
+```
+
+$\bullet$ En la varible $\textbf{Peso}$ se observan varios valores que estan por fuera del rango donde se encunetran la mayoria de registros.
+
+\newpage
+$\textbf{Grafica de dispersión de los datos,Peso vs Ancho}$
+```{r}
+plot(datos$Diametro,datos$Peso,main = "Peso vs Ancho",xlab = "Ancho",
+               ylab = "Peso")
+abline(lm(Peso~Diametro,data = datos),col ="blue")
+legend("bottomright",c("Recta ajustada de RLS"),bty="n",col = "blue",lwd=2,lty = 1)
+```
+
+$\bullet$ La relación entre el $\textbf{Ancho}$ y el $\textbf{Peso}$ se puede aproximar utilizando un modelo de regresión lineal.
+
+$\bullet$ Dado que el modelo de RLS puede aproximar a la relación entre el $\textbf{Ancho}$ y el $\textbf{Peso}$, se puede plantear el modelo:
+
+$$\ y_i = \beta_0 +\beta_1 x_i+\varepsilon_i ,\text{con }\varepsilon_1\overset{\text{i.i.d}}{\sim} N(0,\sigma^2),i=1,.....,30$$
+$\textbf{Ajuste del modelo, estadísticos de resumen y Tabla ANOVA}$
+
+```{r}
+modelo1 <- lm(Peso~Diametro,data = datos)
+modelo1$coefficients
+```
+
+$\bullet$ Del resultado anterior vemos que el modelo ajustado está dado por.
+
+$$\hat{y_i}=\hat{\beta_0}+\hat{\beta_1} x_i=-19.496186+1.908236x_i$$
+\newpage
+**Interpretación de los parámetros estimados del modelo.**
+
+* Interpretación de $\hat{\beta_0}$.Es el valor promedio de la respuesta cuando la predictora toma el valor de cero. Esto sólo si $X = 0,\in [X_{min}, X_{max}]$.
+
+* Interpretación de $\hat{\beta_1}$.por cada unidad de aumento en la predictora el promedio de la respuesta cambia  en $\hat{\beta_1}$ unidades.
+
+**Prueba de significancia de la regresión**
+
+se quiere probar que:
+
+$$\ H_0:\beta_1=0 \ \text{vs.}\ \beta_1\neq 0$$ 
+
+$\bullet$ Hay una tabla que se conoce como tabla de parámetros estimados, identificada en R como coefficients.
+
+```{r}
+modelo1 %>% summary %>% coefficients()
+```
+cuyas columnas son:
+
+* **Parámetro:** con valores (intercept) ó $\beta_0$ y Ancho ó $\beta_1$.
+* **Estimación:** con valores $\hat{\beta}_0$ y $\hat{\beta}_1$.
+* **Error estándar:** con valores $se(\hat{\beta}_0)$ y $se(\hat{\beta}_1)$.
+* **Valor t:** Valores de estadísticos de prueba para la significancia de $\beta_0$ y $\beta_1$, respectivamente.
+* **Valor P:** Valores p para la prueba de significancia de $\beta_0$ y $\beta_1$, respectivamente.
+
+De la tabla anterior interesa los valores de las dos últimas columnas que hacen la prueba de significancia de los parámetros. En particular, nos enfocaremos en tal prueba para $\beta_1$ (segunda fila).De ahí que el valor del estadístico es 4.76051 , y el valor de $\ p-valor=$ es 5.271852e-05
+
+como $\ p-valor < \alpha = 0.05$ entonces rechazo $\ H_0$ y concluyo que en efecto el Ancho de los huevos sobre el promedio de sus pesos  es significativo.
+
+**Coeficiente de determinación para el modelo de regresion**
+
+se sabe que:
+
+$$\ R^2 = \frac{SSR}{SST}=1-\frac{SSE}{SSR+SSE}$$
+
+```{r}
+anova(modelo1)
+```
+De la tabla ANOVA se obtiene:
+
+$$\ R^2=1-\frac{340.39}{340.39+419.76}=0.4478$$
+El 44,78% de la variabilidad total del Peso es explicado por el Ancho.
+
+**Validación del modelo de regresión**
+
+Se deben validar los supuestos: normalidad, varianza constante y linealidad.
+
+**Supuesto de normalidad - Gráfica de normalidad y prueba de Shapiro-Wilk**
+
+```{r}
+modelo1 %>% myQQnorm()
+```
+
+
+Se quiere probar:
+
+$$\ H_0:\varepsilon_i \sim Normal\ \text{vs}\ \ H_1:\varepsilon_i \nsim Normal$$
+
+En la gráfica se observa un pequeño desajuste al principio y al final de los registros y en los datos que están  más centrados están más cerca de la línea, por lo tanto se concluye que el supuesto se cumple.esto es ratificado por la prueba de S-W, ya que $\ p-valor=0.0857>0.05=\alpha$ y, me lleva no rechazar H0
+
+**Validación del supuesto de varianza constante**
+
+```{r}
+plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
+ylab = "Residuales", main = "Residuales vs. valores ajustados")
+abline(h = 0, lty = 2, col = 2)
+```
+
+
+se quierprobar que:
+
+$$H_0: V\left[\varepsilon_i\right] = \sigma^2\ \text{vs}\ H_1: V\left[\varepsilon_i\right] \neq \sigma^2$$
+Como el patrón de la nube de puntos en la gráfica $\varepsilon_i$ vs. $\hat{y}$ no se asemeja a un rectángulo ni a una u, entonces se concluye que el modelo de regresión no tiene varianza constante
+
+**Conclusión**
+
+Como elsupuesto para los residuales no se cumplen(para el caso de la varianza contante), decimos que el modelo de regresion lineal del peso respectl al ancho no sirve para realizar predicciones/estimaciones
+
+**Grafica de dispersión de los datos,Peso vs Alto**
+```{r}
+plot(datos$Altura,datos$Peso,main = "Peso vs Altura",xlab = "Altura",
+               ylab = "Peso")
+abline(lm(Peso~Altura,data = datos),col ="blue")
+legend("bottomright",c("Recta ajustada de RLS"),bty="n",col = "blue",lwd=2,lty = 1)
+```
+
+
+$\bullet$ La relación entre la $\textbf{Altura}$ y el $\textbf{Peso}$ se puede aproximar utilizando un modelo de regresión lineal.
+
+$\bullet$ Dado que el modelo de RLS puede aproximar a la relación entre la $\textbf{Altura}$ y el $\textbf{Peso}$, se puede plantear el modelo:
+
+$$\ y_i = \beta_0 +\beta_1 x_i+\varepsilon_i ,\text{con }\varepsilon_1\overset{\text{i.i.d}}{\sim} N(0,\sigma^2),i=1,.....,30$$
+$\textbf{Ajuste del modelo, estadísticos de resumen y Tabla ANOVA}$
+
+```{r}
+modelo2 <- lm(Peso~Altura,data = datos)
+modelo2$coefficients
+```
+
+$\bullet$ Del resultado anterior vemos que el modelo ajustado está dado por.
+
+$$\hat{y_i}=\hat{\beta_0}+\hat{\beta_1} x_i=-22.847606+1.527659x_i$$
+
+**Interpretación de los parámetros estimados del modelo.**
+
+* Interpretación de $\hat{\beta_0}$.Es el valor promedio de la respuesta cuando la predictora toma el valor de cero. Esto sólo si $X = 0,\in [X_{min}, X_{max}]$.
+
+* Interpretación de $\hat{\beta_1}$.por cada unidad de aumento en la predictora el promedio de la respuesta cambia  en $\hat{\beta_1}$ unidades.
+
+
+**Prueba de significancia de la regresión**
+
+se quiere probar que:
+$$\ H_0:\beta_1=0 \ \text{vs.}\ \beta_1\neq 0$$ 
+
+$\bullet$ con la tabla de parámetros estimados, identificada en R como coefficients.
+
+```{r}
+modelo2 %>% summary %>% coefficients()
+```
+
+De la tabla anterior interesa los valores de las dos últimas columnas que hacen la prueba de significancia de los parámetros. En particular, nos enfocaremos en tal prueba para $\beta_1$ (segunda fila).De ahí que el valor del estadístico es 5.711846 , y el valor de $\ p-valor=$ es 3.984876e-06
+
+como $\ p-valor < \alpha = 0.05$ entonces rechazo $\ H_0$ y concluyo que en efecto la Altura de los huevos sobre el promedio de sus pesos  es significativo.
+
+**Coeficiente de determinación para el modelo de regresion**
+
+se sabe que:
+
+$$\ R^2 = \frac{SSR}{SST}=1-\frac{SSE}{SSR+SSE}$$
+
+```{r}
+anova(modelo2)
+summary(modelo2)$r.squared
+```
+
+De la tabla ANOVA se obtiene:
+
+$$\ R^2=1-\frac{409.07}{409.07+351.08}=0.4618$$
+
+El 46,18% de la variabilidad total del Peso es explicado por la Altura.
+
+**Validación del modelo de regresión**
+
+Se deben validar los supuestos: normalidad, varianza constante y linealidad.
+
+**Supuesto de normalidad - Gráfica de normalidad y prueba de Shapiro-Wilk**
+
+```{r}
+modelo2 %>% myQQnorm()
+```
+
+Se quiere probar:
+
+$$\ H_0:\varepsilon_i \sim Normal\ \text{vs}\ \ H_1:\varepsilon_i \nsim Nomal$$
+
+De la gráfica, considerando el 95% de los puntos del centro de la misma, observe que siguen la línea de referencia y no se alejan mucho de ella, por lo tanto se puede concluir que el supuesto se cumple.
+De la prueba de Shapiro-Wilk se obtiene un$\ p-valor=0.366 > 0.05=\alpha$, entonces no se rechaza $H_0$ y se concluye que los errores son normales.
+
+
+**Validación del supuesto de varianza constante**
+
+```{r}
+plot(fitted(modelo2), residuals(modelo2), xlab = "Peso",
+ylab = "Residuales", main = "Residuales vs. valores ajustados")
+abline(h = 0, lty = 2, col = 2)
+```
+
+donde se quiere probar:
+
+$$H_0: V\left[\varepsilon_i\right] = \sigma^2\ \text{vs}\ H_1: V\left[\varepsilon_i\right] \neq \sigma^2$$
+
+De la gráfica se observa que el patrón formado por la nube de puntos no se aleja mucho de un patrón rectangular, de manera que se puede concluir que el supuesto de varianza constante se cumple.
+
+**Conclusión**
+
+Como los supuestos de normalidad y varianza constante de los residuales se cumplen podemos decir que el modelo de regresion lineal sirve para realizar estimaciones/predicciones
