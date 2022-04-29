@@ -4,18 +4,23 @@ library(lmtest)
 eggs <- read_delim("eggs.csv", delim = ";", 
                    escape_double = FALSE,
                    trim_ws = TRUE)
-#P valor < 0.05 no es normal? #categoria = largo y ancho
+#P valor < 0.05 no es normal? ¿categoria = largo y ancho?
 #solo el largo tiene 1 valor atipico
 shapiro.test(eggs$largo)
 shapiro.test(eggs$ancho)
+#peso si es normal
+shapiro.test(eggs$peso)
+
 cor.test(eggs$peso, eggs$largo)
 cor.test(eggs$peso, eggs$ancho)
 
 plot(eggs$largo, eggs$peso, pch = 20, xlab = "Largo en mm", ylab = "Peso en gr", 
      main = "Diagrama de dispersión", cex.main = 0.95)
 
-plot(eggs$ancho, eggs$peso, pch = 20, xlab = "Categoría", ylab = "Ausencias", 
+plot(eggs$ancho, eggs$peso, pch = 20, xlab = "Ancho en mm", ylab = "Peso en gr", 
      main = "Diagrama de dispersión", cex.main = 0.95)
+
+
 
 #lm peso vs largo
 modelo_la <-lm(peso  ~ largo, data = eggs)
