@@ -5,9 +5,9 @@ eggs <- read_delim("eggs.csv", delim = ";",
                    escape_double = FALSE,
                    trim_ws = TRUE)
 #P valor < 0.05 no es normal? #categoria = largo y ancho
+#solo el largo tiene 1 valor atipico
 shapiro.test(eggs$largo)
 shapiro.test(eggs$ancho)
-
 cor.test(eggs$peso, eggs$largo)
 cor.test(eggs$peso, eggs$ancho)
 
@@ -32,9 +32,9 @@ anova(modelo_la)
 eggs$fitted.modelo_la <- fitted(modelo_la)
 eggs$residuals.modelo_la <- residuals(modelo_la)
 eggs$rstudent.modelo_la <- rstudent(modelo_la)
-
+#p valor mayor a 0.05, errores normales para largo
 shapiro.test(eggs$rstudent.modelo_la)
-
+#esto se podria omitir entonces?
 qqnorm(eggs$rstudent.modelo_la, main = "Normal(0,1)")
 qqline(eggs$rstudent.modelo_la)
 
@@ -64,12 +64,12 @@ anova(modelo_an)
 eggs$fitted.modelo_an <- fitted(modelo_an)
 eggs$residuals.modelo_an <- residuals(modelo_an)
 eggs$rstudent.modelo_an <- rstudent(modelo_an)
-
+#p valor mayor a 0.05, errores normales para ancho
 shapiro.test(eggs$rstudent.modelo_an)
 
 qqnorm(eggs$rstudent.modelo_an, main = "Normal(0,1)")
 qqline(eggs$rstudent.modelo_an)
-
+#esto se podria omitir
 bptest(modelo_an)
 
 plot(eggs$residuals.modelo_an, pch = 20, ylab = "Residuos", xlab = "Índices")
