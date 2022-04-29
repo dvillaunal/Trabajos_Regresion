@@ -1,0 +1,300 @@
+---
+title: 'Punto 2° Parcial: Ajuste de un modelo de R.L.M'
+author:
+- Daniel Villa 1005087556
+- Juan Pablo Vanegas 1000640165
+subtitle: |
+  | Universidad Nacional de Colombia
+  | Analisís de Regresión 2022-1S
+  | Medellín, Colombia
+  | 2022
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+    number_sections: yes
+    df_print: kable
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{xcolor}
+editor_options:
+  chunk_output_type: inline
+---
+
+\centering ![](templates/EscudoUN.png)
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(readr)
+library(tidyverse)
+library(kableExtra)
+library(magrittr)
+library(ggExtra)
+library(GGally)
+library(janitor)
+library(tidystats)
+library(car)
+library(faraway)
+datos <- read_delim("eggs.csv", delim = ";") %>% clean_names()
+datos2 <- read_delim("eggs2.csv", delim = ",") %>% clean_names()
+names(datos)[3] <- "diámetro"
+
+myQQnorm <- function(modelo, student = F, ...){
+  if(student){
+    res <- rstandard(modelo)
+    lab.plot <- "Normal Q-Q Plot of Studentized Residuals"
+  } else {
+    res <- residuals(modelo)
+    lab.plot <- "Normal Q-Q Plot of Residuals"
+  }
+  shapiro <- shapiro.test(res)
+  shapvalue <- ifelse(shapiro$p.value < 0.001, "P value < 0.001", paste("P value = ", round(shapiro$p.value, 4), sep = ""))
+  shapstat <- paste("W = ", round(shapiro$statistic, 4), sep = "")
+  q <- qqnorm(res, plot.it = FALSE)
+  qqnorm(res, main = lab.plot, ...)
+  qqline(res, lty = 2, col = 2)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.95, pos = 4, 'Shapiro-Wilk Test', col = "blue", font = 2)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.80, pos = 4, shapstat, col = "blue", font = 3)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.65, pos = 4, shapvalue, col = "blue", font = 3)
+}
+```
+
+# Objetivos:
+
+Crear un modelo ajustado de R.L.M. por el cual se pueda predecir la estatura de un individuo (discrimiando por genero) sabiendo las estaturas de los padres (madre y padre) utilizando el software estadístico *R*.
+
+## Objetivos específicos
+
+-   Plantear el modelo de R.L.M.
+
+-   Interpretar los parámetros del modelo.
+
+-   Determinar si el efecto de las estaturas de los padres sobre la estatura del sujeto es significativo.
+
+-   Interpretar nuestro $R^2$.
+
+-   Validar los supuestos del modelo.
+
+-   Aplicar la prueba de falta de ajuste.
+
+
+# Antecedentes Relevantes
+
+La población encuestada, pertenece a estudiantes de la Universidad Nacional de Colombia sede Medellín de diferentes carreras, es decir, la mayoria de los sujetos de la muestra son jovenes entre los 18 y los 25 años, además decidimos que solamente aquellos que tenian la posibilidad de saber las estaturas de sus padres entraban a nuestra base de datos, ya que el porceso sería más arduo si tomamos datos donde nos faltan llenar valores en las celdas correspondientes.
+
+
+# Variables de respuesta:
+
+En nuestro caso será la estatura del sujeto (Hombre o Mujer) para ajustar un modelo para predecir por medio de nuestras variables predictoras la esturura del sujeto.
+
+# Variable de Control:
+
+En este caso tendremos 3 varibles haciendo de este un modelo de R.L.M.
+
+1. Estatura del Padre.
+2. Estatura del Madre.
+3. Genero del sujeto.
+
+
+# Ajuste del modelo
+
+Antes de observar o crear un modelo dado unos puntos, primero haremos un test de correlación de los datos para estudiar el grado de variación conjunta entre el diámetro y peso de los huevos:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cor.test(eggs$diametro, eggs$peso)
+```
+Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el diámetro de los huevos tomados no tienen una corelación no significativa, más bien tienen una correlación positiva entre los datos, que vamos a ver por medio de un grafico de dispersión:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(eggs$diámetro, eggs$peso, xlab = "diámetro en mm",
+     ylab = "Peso en gr", main = "diámetro vs Peso",
+     cex.main = 0.95, pch=20)
+```
+
+
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras amuentan los valores del diámetro aumenta el peso) apriori.
+
+Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm()` que toma la forma:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+modelo1 <- lm(peso~diámetro, data=eggs)
+summary(modelo1)
+```
+
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con daimetro cero y un valor de peso inicial.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(eggs$diametro, eggs$peso, xlab = "diámetro en mm",
+     ylab = "Peso en gr", pch=20)
+abline(modelo1)
+```
+
+En primer lugar deseamos obtener los estimadores puntuales, errores estándar y p-valores asociados con cada coeficiente
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(modelo1)$coefficients
+```
+El resultado del ajuste es:
+
+`(20.683718)` `(4.732485) `
+
+$Peso \ = \ 0 + 19.82172*diámetro$
+
+donde los valores entre paréntesis indican los errores estándar de cada coeficiente. Además, puesto que los p-valores son mayores y menores a 0.05, podemos concluir que:
+
+1. En este caso no tiene sentido analizar el valor de la constante para diámetro = 0, ya que pertenecería a un supuesto donde el huevo (imaginariamente) exista, de ahí que el peso del huevo para diámetro = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con diámetro = 0 no existe y más si su peso = 0.
+
+2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre diámetro y peso. Dicha relación es positiva cuando aumenta el diámetro de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $19.82 \ gramos$.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+MSR.ancho <- mean(summary(modelo1)$residuals^2)
+```
+
+
+3. El error estándar residual estimado (s) es de $8.55$. Este valor es muy importante, es un medidor de la calidad (precisión) del modelo. Además nos vamos a basar en él para calcular los intervalos de confianza para el coeficiente del modelo.
+
+
+## Intervalos de Confianza
+
+Obtenemos los correspondientes intervalos de confianza para el parámetro $m$ de nuestras modelo = $Y = 0+m*X$ con nivel significación al 95%
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+confint(modelo1, level = 0.95)
+```
+
+| Parámetro | 2.5 % | 97.5 % |
+|-----------|-------|--------|
+| diametro  |10.1114|29.53198|
+
+**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diametro se encuentra en el intervalo $(10.11146, 29.53198)$.
+
+
+## Tabla ANOVA
+
+Obtenemos la correspondiente tabla ANOVA donde vemos la descomposición de la variabilidad del modelo
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+anova(modelo1)
+```
+
+Observamos que la variabilidad explicada por el modelo, `SSM=161.04`, es inferior a la que queda por explicar (residuos), `SSR=247.85` y el estadístico `F=17.543`, mayor que 1. Además, volviendo a ver el resumen del modelo
+
+`## F-statistic: 17.543 on 1 and 27 DF, p-value: 0.0002684`
+
+tenemos que el $p-valor$ asociado con el estadístico F es inferior a 0.05.
+
+La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su daimetro.
+
+## Coeficiente de determinación
+ 
+En el `modelo1` el valor de $R^2$ es `Multiple R-squared: 0.3938`, alrededor del 39.38% de la variabilidad de Ausencias es explicada por la recta ajustada.
+
+# Análisis de los parámetros del modelo
+
+El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de predicción significativamente bueno para la variable resultado, pero no nos dice nada sobre la contribución individual del modelo. Para encontrar los parámetros del modelo y su significación tenemos que volver a la parte `Coefficients` en el resumen del modelo.
+
+| $\beta_1$ | Estimate | Std. Error | t value | Pr(>|t|) |
+|-----------|----------|------------|---------|----------|
+| diametro  | 19.82172 |  4.732485  | 4.188437|0.00026837|
+
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $19.82 \ gr$, pues en este caso $\beta_1 = 19.82$ Por tanto, la ecuación del modelo queda:
+
+$Y = 0 + 19.82*X$
+
+# Diagnóstico del modelo
+
+En este apartado hemos hecho uso tanto de J.Faraway (2009) como de Sánchez (2011) para el desarrollo del mismo.
+
+Una vez que tenemos el modelo ajustado procedemos con su diagnóstico, que se realiza a través del **análisis de los residuos** $\varepsilon_i$:
+
+- Las hipótesis de linealidad, homocedasticidad e independencia se contrastan a través de un análisis gráfico que enfrenta los valores de los residuos, $\varepsilon_i$, con los valores ajustados $\hat{x}_i$.
+
+- Las hipótesis de media cero, varianza constante, incorrelación y normalidad la comprobamos analíticamente
+
+
+Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura y con, aproximadamente, la misma variabilidad por todas las zonas como se muestra en el gráfico:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
+ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
+abline(h = 0, lty = 2, col = 2)
+```
+
+Continuamos ahora realizando el **diagnóstico analítico**. El primer paso es obtener los residuos, valores ajustados y estadísticos del modelo analizado para poder así estudiar si se cumplen los supuestos del mismo.
+
+__Obtención de residuos, valores ajustados y estadísticos necesarios__
+
+Para ello, añadimos los correspondientes resultados a nuestros datos a través del siguiente código:
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+eggs$fitted.modelo1 <- fitted(modelo1)
+eggs$residuals.modelo1 <- residuals(modelo1)
+eggs$rstudent.modelo1 <- rstudent(modelo1)
+```
+
+El resultado es la creación de las siguientes variables:
+
+- `fitted.modelo1`: valores ajustados (valores de la variable respuesta) para las observaciones originales de la predictora.
+
+- `residuals.modelo1`: residuos del modelo, esto es, diferencia entre valor observado de la respuesta y valor ajustado por el modelo.
+
+- `rstudent.modelo1`: residuos estudentizados del modelo ajustado.
+
+Vamos a utilizar todas estas variables para estudiar si nuestro modelo cumple las hipótesis.
+
+## Test de normalidad (test de Kolmogorov-Smirnov)
+
+Empezamos el análisis con un gráfico `qqplot`, que enfrenta los valores reales a los valores que obtendríamos si la distribución fuera normal. Si los datos reales se distribuyen normalmente, estos tendrán la misma distribución que los valores esperados y en el gráfico `qqplot` obtendremos una linea recta en la diagonal.
+
+
+```{r}
+modelo1 %>% myQQnorm()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
