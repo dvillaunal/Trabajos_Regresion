@@ -488,7 +488,11 @@ matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
 
 Como nuestros datos estan escaladaos a el `log()` vamos a destransformarlos para obtener nuestras predicciones:
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
+x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
+dfp <- data.frame(diametro = x0)
+pred.ip <- predict(modelo2, dfp, interval = "prediction", se.fit = TRUE, data = datos)
+head(pred.ip$fit)
 newpred <- exp(pred.ip$fit)
 head(newpred)
 ```
@@ -536,7 +540,15 @@ Donde:
 - y las lineas punteadas negras son el Intervalo de predicción, junto con la linea del modelo quitando la transformación del `log()`.
 
 
-# 
+# Modelo N°2 (Peso\~Altura)
+
+## Ajuste del modelo:
+
+
+
+
+
+
 
 
 
