@@ -9,20 +9,20 @@ subtitle: |
   | Medellín, Colombia
   | 2022
 output:
-  pdf_document:
-    keep_tex: yes
-    latex_engine: xelatex
-    number_sections: yes
-    df_print: kable
-  toc_float:
-    toc_collapsed: yes
-    toc_depth: 3
-    number_sections: yes
   prettydoc::html_pretty:
     theme: cayman
     highlight: github
     df_print: kable
     toc: yes
+  toc_float:
+    toc_collapsed: yes
+    toc_depth: 3
+    number_sections: yes
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+    number_sections: yes
+    df_print: kable
 header-includes:
 - \usepackage{booktabs}
 - \usepackage{longtable}
