@@ -145,7 +145,7 @@ modelo1 <- lm(peso~diametro, data=datos)
 summary(modelo1)
 ```
 
-Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con daimetro cero y un valor de peso inicial.
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con diámetro cero y un valor de peso inicial.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
@@ -208,7 +208,7 @@ Observamos que la variabilidad explicada por el modelo, `SSM=87.493`, es inferio
 
 tenemos que el $p-valor$ asociado con el estadístico F es inferior a 0.05.
 
-La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su daimetro.
+La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su diámetro.
 
 ## Coeficiente de determinación
  
@@ -367,7 +367,7 @@ Observamos que la variabilidad explicada por el modelo, `SSM=0.029915`, es infer
 
 tenemos que el $p-valor$ asociado con el estadístico F es inferior a 0.05.
 
-La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su daimetro.
+La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su diámetro.
 
 ## Coeficiente de determinación
  
@@ -544,11 +544,158 @@ Donde:
 
 ## Ajuste del modelo:
 
+Antes de observar o crear un modelo dado unos puntos, primero haremos un test de correlación de los datos para estudiar el grado de variación conjunta entre el diámetro y peso de los huevos:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cor.test(datos$largo, datos$peso)
+```
+Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el largo de los huevos tomados tienen una corelación significativa, es decir, una correlación positiva entre los datos, que vamos a ver por medio de un grafico de dispersión:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(datos$largo, datos$peso, xlab = "diámetro en mm",
+     ylab = "Peso en gr", main = "diámetro vs Peso",
+     cex.main = 0.95, pch=20)
+```
+
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras amuentan los valores del diámetro aumenta el peso) apriori.
+
+Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm()` que toma la forma:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+modelo3 <- lm(peso~largo, data=datos)
+summary(modelo3)
+```
+
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con altura = cero y un valor de peso inicial.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(datos$largo, datos$peso, xlab = "diámetro en mm",
+     ylab = "Peso en gr", pch=20)
+abline(modelo3)
+```
+
+En primer lugar deseamos obtener los estimadores puntuales, errores estándar y p-valores asociados con cada coeficiente
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+summary(modelo3)$coefficients
+```
+El resultado del ajuste es:
+
+`(18.0260060)` `(0.3352747) `
+
+$Peso \ = \ 0 + 0.8188604*largo$
+
+donde los valores entre paréntesis indican los errores estándar de cada coeficiente. Además, puesto que los p-valores son mayores y menores a 0.05, podemos concluir que:
+
+1. En este caso no tiene sentido analizar el valor de la constante para largo = 0, ya que pertenecería a un supuesto donde el huevo (imaginariamente) exista, de ahí que el peso del huevo para largo = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con largo = 0 no existe y más si su peso = 0.
+
+2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre largo y peso. Dicha relación es positiva cuando aumenta el largo de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $0.82 \ gramos$.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+MSR.largo <- mean(summary(modelo3)$residuals^2)
+```
 
 
+3. El error estándar residual estimado (s) es de $4.92$. Este valor es muy importante, es un medidor de la calidad (precisión) del modelo. Además nos vamos a basar en él para calcular los intervalos de confianza para el coeficiente del modelo.
 
 
+## Intervalos de Confianza
 
+Obtenemos los correspondientes intervalos de confianza para el parámetro $m$ de nuestras modelo = $Y = 0+m*X$ con nivel significación al 95%
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+confint(modelo3, level = 0.95)
+```
+
+| Parámetro | 2.5 % | 97.5 % |
+|-----------|-------|--------|
+| diametro  |0.13208|1.505639|
+
+**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diametro se encuentra en el intervalo $(0.1320814, 1.505639)$.
+
+
+## Tabla ANOVA
+
+Obtenemos la correspondiente tabla ANOVA donde vemos la descomposición de la variabilidad del modelo
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+anova(modelo3)
+```
+
+Observamos que la variabilidad explicada por el modelo, `SSM=31.4828`, es inferior a la que queda por explicar (residuos), `SSR=5.2778` y el estadístico `F=5.9651`, mayor que 1. Además, volviendo a ver el resumen del modelo
+
+`## F-statistic: 5.9651 on 1 and 28 DF, p-value: 0.02116`
+
+tenemos que el $p-valor$ asociado con el estadístico F es inferior a 0.05.
+
+La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su diámetro.
+
+## Coeficiente de determinación
+ 
+En el `modelo3` el valor de $R^2$ es `Multiple R-squared: 0.1756`, alrededor del 17.56% de la variabilidad del peso es explicada por la recta ajustada.
+
+# Análisis de los parámetros del modelo
+
+El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de predicción significativamente bueno para la variable resultado, pero no nos dice nada sobre la contribución individual del modelo. Para encontrar los parámetros del modelo y su significación tenemos que volver a la parte `Coefficients` en el resumen del modelo.
+
+| $\beta_1$ | Estimate | Std. Error | t value | Pr(>|t|) |
+|-----------|----------|------------|---------|----------|
+| diametro  | 1.53402  |  0.2969033 |5.166734 |1.7581e-05|
+
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.534 \ gr$, pues en este caso $\beta_1 = 1.534$ Por tanto, la ecuación del modelo queda:
+
+$Y = 0 + 1.534*X$
+
+# Diagnóstico del modelo
+
+En este apartado hemos hecho uso tanto de J.Faraway (2009) como de Sánchez (2011) para el desarrollo del mismo.
+
+Una vez que tenemos el modelo ajustado procedemos con su diagnóstico, que se realiza a través del **análisis de los residuos** $\varepsilon_i$:
+
+- Las hipótesis de linealidad, homocedasticidad e independencia se contrastan a través de un análisis gráfico que enfrenta los valores de los residuos, $\varepsilon_i$, con los valores ajustados $\hat{x}_i$.
+
+- Las hipótesis de media cero, varianza constante, incorrelación y normalidad la comprobamos analíticamente
+
+
+Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura y con, aproximadamente, la misma variabilidad por todas las zonas como se muestra en el gráfico:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
+ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
+abline(h = 0, lty = 2, col = 2)
+```
+
+Continuamos ahora realizando el **diagnóstico analítico**. El primer paso es obtener los residuos, valores ajustados y estadísticos del modelo analizado para poder así estudiar si se cumplen los supuestos del mismo.
+
+__Obtención de residuos, valores ajustados y estadísticos necesarios__
+
+Para ello, añadimos los correspondientes resultados a nuestros datos a través del siguiente código:
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+datos$fitted.modelo1 <- fitted(modelo1)
+datos$residuals.modelo1 <- residuals(modelo1)
+datos$rstudent.modelo1 <- rstudent(modelo1)
+```
+
+El resultado es la creación de las siguientes variables:
+
+- `fitted.modelo1`: valores ajustados (valores de la variable respuesta) para las observaciones originales de la predictora.
+
+- `residuals.modelo1`: residuos del modelo, esto es, diferencia entre valor observado de la respuesta y valor ajustado por el modelo.
+
+- `rstudent.modelo1`: residuos estudentizados del modelo ajustado.
+
+Vamos a utilizar todas estas variables para estudiar si nuestro modelo cumple las hipótesis.
+
+## Test de normalidad (test de Kolmogorov-Smirnov)
+
+Empezamos el análisis con un gráfico `qqplot`, que enfrenta los valores reales a los valores que obtendríamos si la distribución fuera normal. Si los datos reales se distribuyen normalmente, estos tendrán la misma distribución que los valores esperados y en el gráfico `qqplot` obtendremos una linea recta en la diagonal.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+modelo1 %>% myQQnorm()
+```
 
 
 
