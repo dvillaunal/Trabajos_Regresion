@@ -9,13 +9,13 @@ subtitle: |
   | Medellín, Colombia
   | 2022
 output:
-  html_document:
-    df_print: paged
   pdf_document:
     keep_tex: yes
     latex_engine: xelatex
     number_sections: yes
     df_print: kable
+  html_document:
+    df_print: paged
 header-includes:
 - \usepackage{booktabs}
 - \usepackage{longtable}
@@ -454,7 +454,7 @@ abline(h = cor(datos$peso, datos$diametro))
 
 Si hubiera una correlación seria, veríamos picos más largos de residuos por encima y por debajo de la línea de correlación. A menos que estos efectos sean fuertes, puede ser difícil de detectar la autocorrelación, por ello realizamos el contraste de Durbin-Watson.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 dwtest(peso~diametro, alternative = "two.sided", data = datos)
 ```
 
@@ -482,7 +482,7 @@ head(pred.ip$fit)
 ```
 Dibujamos las bandas de predicción, que reflejan la incertidumbre sobre futuras observaciones:
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
 ```
 
@@ -509,19 +509,19 @@ Dado un nuevo conjunto de predictores, x0, debemos evaluar la incertidumbre en e
 
 > Nota: Las bandas de confianza reflejan la incertidumbre en la línea de regresión (lo bien que la línea está calculada).
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 pred.ic <- predict(modelo1, dfp, interval = "confidence", se.fit = TRUE, data = datos)
 head(pred.ic$fit)
 ```
 Dibujamos las bandas de confianza, que además reflejan la incertidumbre sobre futuras observaciones:
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 matplot(x0, pred.ic$fit, type = "l", xlab = "diametro", ylab = "peso")
 ```
 
 Por último podemos hacer un gráfico con la nube de puntos y los dos bandas, la de confianza y la de predicción *(Ferrari & Head, 2010)*.
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro", ylab = "peso", col="blue")
 
 # Añadimos las bandas
@@ -759,7 +759,7 @@ El gráfico nos indican que la observación número **6** es un valor influyente
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cook3 <- cooks.distance(modelo3)
 labels3 <- rownames(datos)
-halfnorm(cook, 3, labs = labels, ylab = "Distancia de Cook")
+halfnorm(cook3, 3, labs = labels3, ylab = "Distancia de Cook")
 abline(h=4/30, lty = 2, col = 2)
 ```
 
@@ -805,14 +805,14 @@ head(pred.ic.l$fit)
 
 Dibujamos las bandas de confianza, que además reflejan la incertidumbre sobre futuras observaciones:
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
 ```
 
 Por último podemos hacer un gráfico con la nube de puntos y los dos bandas, la de confianza y la de predicción (Ferrari & Head, 2010).
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$largo, datos$peso, pch = 20, xlab = "largo", ylab = "peso", col="blue")
 
 # Añadimos las bandas
@@ -825,6 +825,7 @@ matlines(dfp.l$largo, pred.ip.l$fit, lty = c(1, 3, 3),
 title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 ```
 
+\newpage
 
 # Apéndice
 
@@ -876,6 +877,8 @@ title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 
 22. R.L.S. Peso vs Largo (IC's & IP's)
 
+\newpage
+
 ## Codigo:
 
 ```
@@ -904,14 +907,18 @@ myQQnorm <- function(modelo, student = F, ...){
     lab.plot <- "Normal Q-Q Plot of Residuals"
   }
   shapiro <- shapiro.test(res)
-  shapvalue <- ifelse(shapiro$p.value < 0.001, "P value < 0.001", paste("P value = ", round(shapiro$p.value, 4), sep = ""))
+  shapvalue <- ifelse(shapiro$p.value < 0.001, "P value < 0.001",
+  paste("P value = ", round(shapiro$p.value, 4), sep = ""))
   shapstat <- paste("W = ", round(shapiro$statistic, 4), sep = "")
   q <- qqnorm(res, plot.it = FALSE)
   qqnorm(res, main = lab.plot, ...)
   qqline(res, lty = 2, col = 2)
-  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.95, pos = 4, 'Shapiro-Wilk Test', col = "blue", font = 2)
-  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.80, pos = 4, shapstat, col = "blue", font = 3)
-  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.65, pos = 4, shapvalue, col = "blue", font = 3)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.95,
+  pos = 4, 'Shapiro-Wilk Test', col = "blue", font = 2)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.80,
+  pos = 4, shapstat, col = "blue", font = 3)
+  text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.65,
+  pos = 4, shapvalue, col = "blue", font = 3)
 }
 
 
@@ -1049,15 +1056,18 @@ matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
 dfp <- data.frame(diametro = x0)
-pred.ip <- predict(modelo2, dfp, interval = "prediction", se.fit = TRUE, data = datos)
-pred.ip1 <- predict(modelo1, dfp, interval = "prediction", se.fit = TRUE, data = datos)
+pred.ip <- predict(modelo2, dfp, interval = "prediction",
+se.fit = TRUE, data = datos)
+pred.ip1 <- predict(modelo1, dfp, interval = "prediction",
+se.fit = TRUE, data = datos)
 head(pred.ip$fit)
 newpred <- exp(pred.ip$fit)
 head(newpred)
 
 
 ## ----------------------------------------------------------------------
-pred.ic <- predict(modelo1, dfp, interval = "confidence", se.fit = TRUE, data = datos)
+pred.ic <- predict(modelo1, dfp, interval = "confidence",
+se.fit = TRUE, data = datos)
 head(pred.ic$fit)
 
 
@@ -1066,7 +1076,8 @@ matplot(x0, pred.ic$fit, type = "l", xlab = "diametro", ylab = "peso")
 
 
 ## ----------------------------------------------------------------------
-plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro", ylab = "peso", col="blue")
+plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro",
+ylab = "peso", col="blue")
 
 # Añadimos las bandas
 matlines(dfp$diametro, pred.ic$fit, lty = c(1, 2, 2), 
@@ -1174,7 +1185,8 @@ matplot(x0.l, pred.ip.l$fit, type = "l", xlab = "largo", ylab = "peso")
 
 
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
-pred.ic.l <- predict(modelo3, dfp.l, interval = "confidence", se.fit = TRUE, data = datos)
+pred.ic.l <- predict(modelo3, dfp.l, interval = "confidence",
+se.fit = TRUE, data = datos)
 head(pred.ic.l$fit)
 
 
@@ -1183,7 +1195,8 @@ matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
 
 
 ## ----------------------------------------------------------------------
-plot(datos$largo, datos$peso, pch = 20, xlab = "largo", ylab = "peso", col="blue")
+plot(datos$largo, datos$peso, pch = 20, xlab = "largo",
+ylab = "peso", col="blue")
 
 # Añadimos las bandas
 matlines(dfp.l$largo, pred.ic.l$fit, lty = c(1, 2, 2), 
