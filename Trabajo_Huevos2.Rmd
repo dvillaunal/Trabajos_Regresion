@@ -1,5 +1,5 @@
 ---
-title: 'Punto 2° Parcial: Ajuste de un modelo de R.L.M'
+title: 'Punto 1° Parcial: Ajuste de un modelo de R.L.S'
 author:
 - Daniel Villa 1005087556
 - Juan Pablo Vanegas 1000640165
@@ -14,8 +14,15 @@ output:
     latex_engine: xelatex
     number_sections: yes
     df_print: kable
-  html_document:
-    df_print: paged
+  toc_float:
+    toc_collapsed: yes
+    toc_depth: 3
+    number_sections: yes
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    df_print: kable
+    toc: yes
 header-includes:
 - \usepackage{booktabs}
 - \usepackage{longtable}
@@ -218,9 +225,9 @@ En el `modelo1` el valor de $R^2$ es `Multiple R-squared: 0.4881`, alrededor del
 
 El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de predicción significativamente bueno para la variable resultado, pero no nos dice nada sobre la contribución individual del modelo. Para encontrar los parámetros del modelo y su significación tenemos que volver a la parte `Coefficients` en el resumen del modelo.
 
-| $\beta_1$ | Estimate | Std. Error | t value | Pr(>|t|) |
-|-----------|----------|------------|---------|----------|
-| diametro  | 1.53402  |  0.2969033 |5.166734 |1.7581e-05|
+| $\beta_1$ | Estimate | Std. Error | t value | $Pr(>|t|)$ |
+|-----------|----------|------------|---------|------------|
+| diametro  | 1.53402  |  0.2969033 |5.166734 |1.7581e-05  |
 
 Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.534 \ gr$, pues en este caso $\beta_1 = 1.534$ Por tanto, la ecuación del modelo queda:
 
@@ -377,9 +384,9 @@ En el `modelo1` el valor de $R^2$ es `Multiple R-squared: 0.4965`, alrededor del
 
 El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de predicción significativamente bueno para la variable resultado, pero no nos dice nada sobre la contribución individual del modelo. Para encontrar los parámetros del modelo y su significación tenemos que volver a la parte `Coefficients` en el resumen del modelo.
 
-| $\beta_1$   | Estimate | Std. Error | t value | Pr(>|t|)   |
-|-------------|----------|------------|---------|------------|
-|log(diametro)| 1.2133149| 0.2309251  |5.2541481|1.384744e-05|
+| $\beta_1$   | Estimate | Std. Error | t value | $Pr(>|t|)$   |
+|-------------|----------|------------|---------|--------------|
+|log(diametro)| 1.2133149| 0.2309251  |5.2541481|1.384744e-05  |
 
 Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.213 \ gr$, pues en este caso $\beta_1 = 1.213$ Por tanto, la ecuación del modelo queda:
 
@@ -640,9 +647,9 @@ En el `modelo3` el valor de $R^2$ es `Multiple R-squared: 0.1756`, alrededor del
 
 El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de predicción significativamente bueno para la variable resultado, pero no nos dice nada sobre la contribución individual del modelo. Para encontrar los parámetros del modelo y su significación tenemos que volver a la parte `Coefficients` en el resumen del modelo.
 
-| $\beta_1$ | Estimate | Std. Error | t value | Pr(>|t|) |
-|-----------|----------|------------|---------|----------|
-|   largo   | 0.8188604|  0.3352747 |2.4423569|0.02116101|
+| $\beta_1$ | Estimate | Std. Error | t value | $Pr(>|t|)$  |
+|-----------|----------|------------|---------|-------------|
+|   largo   | 0.8188604|  0.3352747 |2.4423569|0.02116101   |
 
 Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $0.82 \ gr$, pues en este caso $\beta_1 = 0.82$ Por tanto, la ecuación del modelo queda:
 
@@ -1189,10 +1196,8 @@ pred.ic.l <- predict(modelo3, dfp.l, interval = "confidence",
 se.fit = TRUE, data = datos)
 head(pred.ic.l$fit)
 
-
 ## ----------------------------------------------------------------------
 matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
-
 
 ## ----------------------------------------------------------------------
 plot(datos$largo, datos$peso, pch = 20, xlab = "largo",
@@ -1206,9 +1211,36 @@ matlines(dfp.l$largo, pred.ip.l$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
 
 title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
-
-
 ```
+
+# Referencias
+
+**[1]** Coleman, D. E., & Montgomery, D. C. (1993). A Systematic Approach to Planning for a Designed Industrial Experiment. Technometrics, 35(1), 1--12. <https://doi.org/10.2307/1269280>
+
+**[2]** The jamovi project (2021). jamovi. (Version 2.2) [Computer Software]. Retrieved from <https://www.jamovi.org>.
+
+**[3]** R Core Team (2021). R: A Language and environment for statistical computing. (Version 4.0) [Computer software]. Retrieved from <https://cran.r-project.org>. (R packages retrieved from MRAN snapshot 2021-04-01).
+
+**[4]** Fox, J., & Weisberg, S. (2020). car: Companion to Applied Regression. [R package]. Retrieved from <https://cran.r-project.org/package=car>.
+
+**[5]** Ali S. Hadi, S. C. &. (2006). Linear models with r (4th edition.). John Wiley & Sons. Retrieved from <http://samples.sainsburysebooks.co.uk/9780470055458_sample_381725.pdf>
+
+**[6]** Ferrari, D., & Head, T. (2010). Regression in r. part i: Simple linear regression. UCLA Department of Statistics Statistical Consulting Center. Retrieved October 13, 2014, from <http://scc.stat.ucla.edu/page_attachments/0000/0139/reg_1.pdf>
+
+**[7]** Field, A., Miles, J., & Field, Z. (2012). Discovering statistics using r (1st edition.). Sage Publications Ltd.
+
+**[8]** J.Faraway, J. (2009). Linear models with r (1st edition.). Taylor & Francis e-Library. Retrieved from <http://home.ufam.edu.br/jcardoso/PPGMAT537/Linear%20Models%20with%20R.pdf>
+
+**[9]** Kabacoff, R. (2014). Creating a figure arrangement with fine control. Retrieved October 13, 2014, from <http://www.statmethods.net/advgraphs/layout.html>
+
+**[10]** Pérez, J. L. (2014). La estadística: Una orqueta hecha instrumento. Retrieved October 13, 2014, from <http://estadisticaorquestainstrumento.wordpress.com/>
+
+**[11]** Sánchez, J. G. P. (2011). Regresión lineal simple. Universidad Politécnica de Madrid. Retrieved October 13, 2014, from <http://ocw.upm.es/estadistica-e-investigacion-operativa/introduccion-a-la-estadistica-basica-el-diseno-de-experimentos-y-la-regresion-lineal/contenidos/Material-de-clase/Regresion.pdf>
+
+**[12]** (SCG), S. S. C. G. (2013). Multiple linear regression (r). San Diego State University. Retrieved October 13, 2014, from <http://scg.sdsu.edu/mlr-r/>
+
+**[13]** SPSS. (2007). Análisis de regresión lineal: El procedimiento regresión lineal. IBM SPSS Statistics. Retrieved October 13, 2014, from <http://pendientedemigracion.ucm.es/info/socivmyt/paginas/D_departamento/materiales/analisis_datosyMultivariable/18reglin_SPSS.pdf>
+
 
 
 
