@@ -13,6 +13,7 @@ library(magrittr)
 library(readr)
 library(psych)
 library(knitr)
+library(ppcor)
 ```
 
 <!-- disminuir nombre de las columnas para que no se transpongan -->
@@ -42,7 +43,6 @@ exp_ma:                             \newline
 exp_pa:                             \newline
 
 ```{r}
-
 str(estaturas)
 estaturas$genero %<>% as.factor()
 estaturas$exp_sujeto %<>% as.Date()
@@ -55,17 +55,30 @@ estaturas$ced_padre %<>% as.character()
 ```
 
 ```{r}
-#separando las variables numericas
-esta <-  data.frame(estaturas$est_madre,estaturas$est_padre,estaturas$est_sujeto)
+#usamos las variables explicativas
+esta <-data.frame(estaturas$est_madre,estaturas$est_padre,
+                  estaturas$est_sujeto,estaturas$genero)
+
+colnames(esta) <- c("est_ma", "est_pa","est","genero")
+
 pairs(esta, panel = panel.smooth)
 ```
 ```{r}
-cor(esta, use = "everything", method = "pearson")
+cor(esta[0:3], use = "everything", method = "pearson")
 ```
+
 
 Como vemos en la tabla estatura sujeto tiene una correlación leve negativa con las variables explicativas numericas (estatura del padre y de la madre) y entre ellas también existe una correlación leve negativa 
 
 Para definir el modelo numero 1 vamos a usar como variables explicativas estatura de la madre, estatura del padre y género y como variable a explicar estatura del sujeto.
+
+Dado a que tenemos más de una variable explicativa se procede a usar los coeficientes de la correlación parcial y múltiple.
+
+```{r}
+pcor.test(esta$est_ma)
+```
+
+
 
 ```{r}
 modelo1 <- lm(data = estaturas, est_sujeto ~  genero+est_madre+est_padre)
