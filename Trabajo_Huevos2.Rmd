@@ -640,11 +640,11 @@ El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de
 
 | $\beta_1$ | Estimate | Std. Error | t value | Pr(>|t|) |
 |-----------|----------|------------|---------|----------|
-| diametro  | 1.53402  |  0.2969033 |5.166734 |1.7581e-05|
+|   largo   | 0.8188604|  0.3352747 |2.4423569|0.02116101|
 
-Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.534 \ gr$, pues en este caso $\beta_1 = 1.534$ Por tanto, la ecuación del modelo queda:
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $0.82 \ gr$, pues en este caso $\beta_1 = 0.82$ Por tanto, la ecuación del modelo queda:
 
-$Y = 0 + 1.534*X$
+$Y = 0 + 0.82*X$
 
 # Diagnóstico del modelo
 
@@ -657,10 +657,10 @@ Una vez que tenemos el modelo ajustado procedemos con su diagnóstico, que se re
 - Las hipótesis de media cero, varianza constante, incorrelación y normalidad la comprobamos analíticamente
 
 
-Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura y con, aproximadamente, la misma variabilidad por todas las zonas como se muestra en el gráfico:
+Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura, para esto evaluaremos el siguiente grafico:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
+plot(fitted(modelo3), residuals(modelo3), xlab = "Largo",
 ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
 abline(h = 0, lty = 2, col = 2)
 ```
@@ -673,18 +673,18 @@ Para ello, añadimos los correspondientes resultados a nuestros datos a través 
 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-datos$fitted.modelo1 <- fitted(modelo1)
-datos$residuals.modelo1 <- residuals(modelo1)
-datos$rstudent.modelo1 <- rstudent(modelo1)
+datos$fitted.modelo3 <- fitted(modelo3)
+datos$residuals.modelo3 <- residuals(modelo3)
+datos$rstudent.modelo3 <- rstudent(modelo3)
 ```
 
 El resultado es la creación de las siguientes variables:
 
-- `fitted.modelo1`: valores ajustados (valores de la variable respuesta) para las observaciones originales de la predictora.
+- `fitted.modelo3`: valores ajustados (valores de la variable respuesta) para las observaciones originales de la predictora.
 
-- `residuals.modelo1`: residuos del modelo, esto es, diferencia entre valor observado de la respuesta y valor ajustado por el modelo.
+- `residuals.modelo3`: residuos del modelo, esto es, diferencia entre valor observado de la respuesta y valor ajustado por el modelo.
 
-- `rstudent.modelo1`: residuos estudentizados del modelo ajustado.
+- `rstudent.modelo3`: residuos estudentizados del modelo ajustado.
 
 Vamos a utilizar todas estas variables para estudiar si nuestro modelo cumple las hipótesis.
 
