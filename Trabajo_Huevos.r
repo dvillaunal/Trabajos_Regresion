@@ -169,7 +169,12 @@ head(pred.ip$fit)
 matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
 
 
-## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
+x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
+dfp <- data.frame(diametro = x0)
+pred.ip <- predict(modelo2, dfp, interval = "prediction", se.fit = TRUE, data = datos)
+pred.ip1 <- predict(modelo1, dfp, interval = "prediction", se.fit = TRUE, data = datos)
+head(pred.ip$fit)
 newpred <- exp(pred.ip$fit)
 head(newpred)
 
@@ -190,6 +195,125 @@ plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro", ylab = "peso", col
 matlines(dfp$diametro, pred.ic$fit, lty = c(1, 2, 2), 
          lwd = 1.5, col = "red")
 
-matlines(dfp$diametro, pred.ip$fit, lty = c(1, 3, 3),
+matlines(dfp$diametro, pred.ip1$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
+title(main= "R.L.S. Peso vs Diámetro (IC's & IP's)")
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+cor.test(datos$largo, datos$peso)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+plot(datos$largo, datos$peso, xlab = "largo en mm",
+     ylab = "Peso en gr", main = "largo vs Peso",
+     cex.main = 0.95, pch=20)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+modelo3 <- lm(peso~largo, data=datos)
+summary(modelo3)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+plot(datos$largo, datos$peso, xlab = "diámetro en mm",
+     ylab = "Peso en gr", pch=20)
+abline(modelo3)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+summary(modelo3)$coefficients
+
+
+## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
+MSR.largo <- mean(summary(modelo3)$residuals^2)
+
+
+## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
+confint(modelo3, level = 0.95)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+anova(modelo3)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+plot(fitted(modelo3), residuals(modelo3), xlab = "Largo",
+ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
+abline(h = 0, lty = 2, col = 2)
+
+
+## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
+datos$fitted.modelo3 <- fitted(modelo3)
+datos$residuals.modelo3 <- residuals(modelo3)
+datos$rstudent.modelo3 <- rstudent(modelo3)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+modelo3 %>% myQQnorm()
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+bptest(modelo3)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+plot(datos$residuals.modelo3, pch = 20, ylab = "Residuos", xlab = "Índices")
+abline(h = cor(datos$peso , datos$largo))
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+dwtest(peso~largo, alternative = "two.sided", data = datos)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+scatterplot(peso~largo,data = datos,smooth = F, pch=19,
+            regLine = F, xlab = "Largo", ylab = "Peso")
+title(main = "Scatter Plot | Peso vs Largo")
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+outlierTest(modelo3, cutoff = 0.05, n.max = 10, order = TRUE)
+influencePlot(modelo3, id.n = 2)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+cook3 <- cooks.distance(modelo3)
+labels3 <- rownames(datos)
+halfnorm(cook, 3, labs = labels, ylab = "Distancia de Cook")
+abline(h=4/30, lty = 2, col = 2)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+x0.l <- seq(min(datos$largo), max(datos$largo), length = 15)
+dfp.l <- data.frame(largo = x0.l)
+pred.ip.l <- predict(modelo3, dfp.l, interval = "prediction",
+                     se.fit =TRUE, data = datos)
+head(pred.ip.l$fit)
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+matplot(x0.l, pred.ip.l$fit, type = "l", xlab = "largo", ylab = "peso")
+
+
+## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
+pred.ic.l <- predict(modelo3, dfp.l, interval = "confidence", se.fit = TRUE, data = datos)
+head(pred.ic.l$fit)
+
+
+## ----------------------------------------------------------------------
+matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
+
+
+## ----------------------------------------------------------------------
+plot(datos$largo, datos$peso, pch = 20, xlab = "largo", ylab = "peso", col="blue")
+
+# Añadimos las bandas
+matlines(dfp.l$largo, pred.ic.l$fit, lty = c(1, 2, 2), 
+         lwd = 1.5, col = "red")
+
+matlines(dfp.l$largo, pred.ip.l$fit, lty = c(1, 3, 3),
+         lwd = 1.5, col= "black")
+
+title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 
