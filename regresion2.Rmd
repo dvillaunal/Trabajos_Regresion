@@ -1,0 +1,80 @@
+---
+title: "regresion2_sinrevisar"
+output: pdf_document
+date: '2022-04-30'
+---
+<!-- en portada e introducción dejar claro que lo que se busca es 
+ explicar la estatura del sujeto con las variables explicativas que ya 
+ sabemos-->
+
+
+```{r}
+library(magrittr)
+library(readr)
+library(psych)
+library(knitr)
+```
+
+<!-- disminuir nombre de las columnas para que no se transpongan -->
+
+```{r}
+estaturas <- read_csv("estaturas.csv")
+colnames(estaturas) <- c("est","genero","exp","est_ma", "est_pa","ced", 
+                         "ced_ma","ced_pa","exp_pa","exp_ma")
+kable(rbind(head(estaturas, n = 5),
+            rep(".", ncol(estaturas)), rep(".", ncol(estaturas)),
+            rep(".", ncol(estaturas)),
+            tail(estaturas, n = 5)),digits = 30, align = "c")
+estaturas <- read_csv("estaturas.csv")
+
+```
+
+Con las siguientes variables: \newline
+est: estatura del sujeto \newline
+genero: genero del sujeto \newline
+exp:                       \newline     
+est_ma: estatura de la madre del sujeto \newline
+est_pa: estatura del padre del sujeto \newline
+ced: cédula del sujeto \newline
+ced_ma: cédula  de la madre del sujeto \newline
+ced_pa: cédula del padre del sujeto \newline
+exp_ma:                             \newline
+exp_pa:                             \newline
+
+```{r}
+
+str(estaturas)
+estaturas$genero %<>% as.factor()
+estaturas$exp_sujeto %<>% as.Date()
+estaturas$exp_madre %<>% as.Date() 
+estaturas$exp_padre %<>% as.Date() 
+
+estaturas$ced_sujeto %<>% as.character()
+estaturas$ced_madre %<>% as.character()
+estaturas$ced_padre %<>% as.character()
+```
+
+```{r}
+#separando las variables numericas
+esta <-  data.frame(estaturas$est_madre,estaturas$est_padre,estaturas$est_sujeto)
+pairs(esta, panel = panel.smooth)
+```
+```{r}
+cor(esta, use = "everything", method = "pearson")
+```
+
+Como vemos en la tabla estatura sujeto tiene una correlación leve negativa con las variables explicativas numericas (estatura del padre y de la madre) y entre ellas también existe una correlación leve negativa 
+
+Para definir el modelo numero 1 vamos a usar como variables explicativas estatura de la madre, estatura del padre y género y como variable a explicar estatura del sujeto.
+
+```{r}
+modelo1 <- lm(data = estaturas, est_sujeto ~  genero+est_madre+est_padre)
+summary(modelo1)
+```
+Vemos que la mediana de los residuos es cercana a 0, lo cual es muy bueno pues queremos que los residuos tengan media cero.
+
+Observando los coeficientes vemos que según el estadístico t sólo son significativas las variables estatura del padre y de la madre <!-- confirmar --> y procedemos a aplicar el método de selección de modelos para ver si eliminamos alguna variable.
+
+Aún así, el modelo con todas las variables tiene un error estándar de !!!!! y una $R^2 = 0.3025$ 3.4.2
+
+
