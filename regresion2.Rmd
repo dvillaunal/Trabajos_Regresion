@@ -95,3 +95,44 @@ $$\begin{array}{l} H_0: \beta_j = 0\\ H_1: \beta_j \ne 0 \end{array}\ \text{ par
 y tomamos los valores del estadístico de prueba y el valor-P para la prueba *(Columnas 4 y 5 de la Tabla 2)*, se puede concluir a un nivel de significancia de $\alpha = 0.05$ que los parámetros individuales $\beta_0$, $\beta_2$ y $\beta_3$ son significativos en presencia de los demás parámetros, por otro lado individualmente $\beta_1$ no lo es cuando los demás parámetros del modelos están presentes.
 
 
+```{r}
+esta$fitted.modelo1 <- fitted(modelo1)
+esta$residuals.modelo1 <- residuals(modelo1)
+esta$rstudent.modelo1 <- rstudent(modelo1)
+```
+
+
+
+
+```{r}
+plot(modelo1, which = 1, pch = 20)
+```
+
+```{r}
+plot(modelo1, which = 2, pch = 20)
+```
+En este gráfico los residuos tipificados se trazan contra los cuantiles de una distribución normal estándar. Si los residuos se distribuyen normalmente los datos se deben situar a lo largo de la línea. En este caso, los datos parecen tener una distribución normal.
+Se va a comprobar lo visto en el QQ-plot
+```{r}
+ks.test(esta$rstudent.modelo1, "pnorm")
+```
+
+
+```{r}
+hist(esta$rstudent.modelo1, xlab = "residuos", main = "Histograma residuos")
+
+```
+
+El p-valor para el contraste de normalidad es mayor que 0.05 (p = 0.9775) y además el histograma se parece a una distribución normal entonces no hay problemas de normalidad.
+
+```{r}
+plot(modelo1, which = 3, pch = 20)
+```
+
+```{r}
+plot(modelo1, which = 5, pch = 20)
+
+```
+
+
+
