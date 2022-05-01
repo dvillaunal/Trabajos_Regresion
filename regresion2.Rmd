@@ -20,7 +20,8 @@ library(ppcor)
 
 ```{r}
 estaturas <- read_csv("estaturas.csv")
-colnames(estaturas) <- c("est","genero","exp","est_ma", "est_pa","ced", 
+
+colnames(estaturas) <- c("est","genero","exp","est_ma","est_pa","ced",
                          "ced_ma","ced_pa","exp_pa","exp_ma")
 kable(rbind(head(estaturas, n = 5),
             rep(".", ncol(estaturas)), rep(".", ncol(estaturas)),

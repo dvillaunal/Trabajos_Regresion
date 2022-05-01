@@ -9,13 +9,20 @@ subtitle: |
   | Medellín, Colombia
   | 2022
 output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    df_print: kable
+    toc: yes
+  toc_float:
+    toc_collapsed: yes
+    toc_depth: 3
+    number_sections: yes
   pdf_document:
     keep_tex: yes
     latex_engine: xelatex
     number_sections: yes
     df_print: kable
-  html_document:
-    df_print: paged
 header-includes:
 - \usepackage{booktabs}
 - \usepackage{longtable}
@@ -32,7 +39,7 @@ header-includes:
 - \usepackage{makecell}
 - \usepackage{xcolor}
 editor_options:
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 \centering ![](templates/EscudoUN.png)
@@ -54,14 +61,19 @@ library(kableExtra)
 library(magrittr)
 library(ggExtra)
 library(GGally)
-estaturas <- read_csv("estaturas.csv")
+library(janitor)
+library(tidystats)
+library(car)
+library(faraway)
+library(lmtest)
+library(graphics)
+# lectura de la base de datos:
+stature <- read_csv("estaturas.csv")
 ```
 
 # Objetivos:
 
 Crear un modelo ajustado de R.L.M. por el cual se pueda predecir la estatura de un individuo (discrimiando por genero) sabiendo las estaturas de los padres (madre y padre) utilizando el software estadístico *R*.
-
-## Objetivos Especificos
 
 ## Objetivos específicos
 
@@ -93,7 +105,7 @@ En este caso tendremos 3 varibles haciendo de este un modelo de R.L.M.
 
 1. Estatura del Padre.
 2. Estatura del Madre.
-3. Genero del sujeto. 
+3. Genero del sujeto.
 
 # Creación del Modelo
 
@@ -104,12 +116,10 @@ $Y_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \beta_3X_{i3}+\varepsilon_i, \ 
 Para llegar a lo anterior primero miraremos nuestra base de datos y como se comportan estas variables *(algunos datos...)*.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-kable(rbind(head(estaturas, n = 5),
-            rep(".", ncol(estaturas)), rep(".", ncol(estaturas)),
-            rep(".", ncol(estaturas)),
-            tail(estaturas, n = 5)),digits = 30, align = "c")
+kable(rbind(head(stature, n = 5),rep(".", ncol(stature)),
+            rep(".", ncol(stature)),rep(".", ncol(stature)),
+            tail(stature, n = 5)),digits = 30, align = "c")
 ```
-
 
 Definimos nuestras variables:
 
@@ -133,61 +143,90 @@ Definimos nuestras variables:
 
 - `exp_padre`: Fecha de expedición de la cedula del padre.
 
+# Análisis de correlación
+
+Comenzamos representando los datos en una nube de puntos múltiple, donde vemos la relación entre cada par de variables.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-estaturas$genero %<>% as.factor()
-estaturas$exp_sujeto %<>% as.Date(.,tryFormats = c("%d/%m/%Y"))
-estaturas$exp_padre %<>% as.Date(.,tryFormats = c("%d/%m/%Y"))
-estaturas$exp_madre %<>% as.Date(.,tryFormats = c("%d/%m/%Y"))
-estaturas$ced_madre %<>% as.character()
+stature$genero %<>% as.factor()
+stature$exp_sujeto %<>% as.Date(format="%d/%m/%Y")
+stature$exp_padre %<>% as.Date(format="%d/%m/%Y")
+stature$exp_madre %<>% as.Date(format="%d/%m/%Y")
+stature$ced_madre %<>%  as.character()
+stature %>% ggpairs(.,columns=c(1,2,4,5), aes(color=genero,alpha=0.5))
 ```
 
-## Resumen de los datos:
 
-Hacemos un resumen de los datos para mirar de primera mano nuestros valores estadísticos comunes ($\mu$, $\sigma$, mediana, máximo y mínimo valor)
-
-![Figura_2](templates/Summary_Estatura.png)
-
-Ahora para ser un poco más minuciosos haremos un *"boxplot"* e *histogramas* de los datos para observar como se comportan nuestras variables de control y respuesta.
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-estaturas %>% ggplot(aes(x=est_sujeto, fill= genero))+
-  geom_histogram(alpha=0.7, bins=6, color="black")+
-  facet_grid(~genero)+
-  theme(legend.position = "none")+
-  labs(x="Estatura del sujeto en cm", y="Frecuencia",
-       title = "Histograma de las estaturas del sujeto facetado por genero")
+```{r message=FALSE, warning=FALSE, include=FALSE}
+colnames(stature) <- c("est","genero","exp","est_ma","est_pa","ced",
+                         "ced_ma","ced_pa","exp_pa","exp_ma")
 ```
 
-Podemos ver que los hombres sus estaturas varian mucho desde los $150 cm$ superando los $190cm$, esto en contra parte con las mujeres que se encuentran mejr agrupadas tenienedo tendencias más bajas que los hombres.
+Según la sigueinte tabla veremos que tan debil o fuerte son los datos respecto a otros:
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-estaturas %>% ggplot(aes(y=est_sujeto, x=genero, fill=genero))+
-  stat_boxplot(geom = "errorbar", width = 0.5)+
-  geom_boxplot(outlier.colour = "transparent") +
-  geom_jitter(colour = "black", width = 0.1, height = 0)+
-  xlab("Genero") + 
-  ylab("Estatura") + 
-  labs(fill = "Genero") + 
-  labs(title = "Boxplot Estatura sujeto") + 
-  theme_light()+theme(legend.position = "none")
-```
+![corr_guide](templates/corr_guide.jpg)
 
-Como podemos ver los datos de los hombres tienen mayores rangos englosando a las mujeres aun en sus bigotes superiores.
+como podemos apreciar nuestras 3 correlaciones entre cada variable predictora y nuestra $Y$ es una *Correlación Negativa débil* ya que ninguno supera $\pm 0.5$.
 
-ahora observaremos como se distribuyen las estaturas de padre y madre:
+# Ajuste del modelo
 
 ```{r}
-estaturas %>%  ggplot()+
-  geom_density(aes(x=est_padre, fill="blue"), alpha=0.5)+
-  geom_density(aes(x=est_madre,fill="red"), alpha=0.5)+
-  theme_light()+
-  labs(x="Estaturas en cm", y="Density",
-       title = "Distribución de la estutura del padre y la madre",
-       fill="Estaturas")+
-  scale_fill_hue(labels = c("Padre", "Madre"))
+modelo.m <- lm(est ~ est_pa + est_ma + genero, data = stature)
+summary(modelo.m)
 ```
+
+El error típico residual es `11.2`, la $R^2=0.3025$, aunque para el modelo múltiple es mejor fijarnos en su valor ajustado $R_a^2=0.222$. Esto que significa que la recta de regresión explica el 22.22% de la variabilidad del modelo. Además, `F = 3.758` con una significación $p<0.05$, lo que nos dice que nuestro modelo de regresión resulta un poco mejor que el modelo básico.
+
+# Comparación de modelos
+
+Pretendemos seleccionar el “mejor” subconjunto de predictores por varias razones: 
+
+1. Explicar los datos de la manera más simple. Debemos eliminar predictores redundantes.
+
+2. Predictores innecesarios añade ruido a las estimaciones.
+
+3. La causa de la multicolinealidad es tener demasiadas variables tratando de hacer el mismo trabajo. Eliminar el exceso de predictores ayuda a la interpretación del modelo.
+
+4. Si vamos a utilizar el modelo para la predicción, podemos ahorrar tiempo y/o dinero al no medir predictores redundantes.
+
+Puesto que tenemos dos variables explicativas disponemos de 6 modelos posibles:
+
+$modelo \ 1: \ est \sim est_{ma}+est_{pa}+genero$
+
+$modelo \ 2: \ est \sim est_{ma}+genero$
+
+$modelo \ 3: \ est \sim est_{pa}+genero$
+
+$modelo \ 4: \ est \sim est_{ma}$
+
+$modelo \ 5: \ est \sim est_{pa}$
+
+$modelo \ 6: \ est \sim genero$
+
+Vamos a ajustar cada uno de los modelos
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+modelo2 <- lm(est~est_ma+genero, data=stature)
+modelo3 <- lm(est~est_pa+genero, data=stature)
+modelo4 <- lm(est~est_ma, data=stature)
+modelo5 <- lm(est~est_pa, data=stature)
+modelo6 <- lm(est~genero, data=stature)
+
+summary(modelo2)
+summary(modelo3)
+summary(modelo4)
+summary(modelo5)
+summary(modelo6)
+```
+
+
+
+
+
+
+
+
+
 
 
 

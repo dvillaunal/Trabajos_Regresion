@@ -42,6 +42,7 @@ editor_options:
   chunk_output_type: console
 ---
 
+
 \centering ![](templates/EscudoUN.png)
 
 \newpage
@@ -69,7 +70,6 @@ library(lmtest)
 library(graphics)
 datos <- read_delim("eggs.csv", delim = ";") %>% clean_names()
 names(datos)[3] <- "diametro"
-
 myQQnorm <- function(modelo, student = F, ...){
   if(student){
     res <- rstandard(modelo)
@@ -90,41 +90,50 @@ myQQnorm <- function(modelo, student = F, ...){
 }
 ```
 
-# Objetivos:
+# Objetivos
 
-Crear un modelo ajustado de R.L.M. por el cual se pueda predecir la estatura de un individuo (discrimiando por genero) sabiendo las estaturas de los padres (madre y padre) utilizando el software estadístico *R*.
+Crear un modelo ajustado de R.L.S. por el cual predecimos el peso de los huevos (de gallina) por medio de la altura o el diámetro de este utilizando el software estadístico *R*
 
 ## Objetivos específicos
 
--   Plantear el modelo de R.L.M.
-
 -   Interpretar los parámetros del modelo.
 
--   Determinar si el efecto de las estaturas de los padres sobre la estatura del sujeto es significativo.
+-   Determinar si el efecto de la altura o diámetro sobre el peso de los huevos es significativo.
 
 -   Interpretar nuestro $R^2$.
+
+-   Calcular un I.C. al $100*(1-\alpha)\%$ para $\beta_1$.
+
+-   Calcular un intervalo de predicción al $100*(1-\alpha)\%$ para una altura o diámetro dado.
+
+-   Calcular un I.C. al $100*(1-\alpha)\%$ para una altura o diámetro dado.
 
 -   Validar los supuestos del modelo.
 
 -   Aplicar la prueba de falta de ajuste.
 
+-   Analizar los I.C's y I.P's para valores promedios y futuros de la respuesta.
 
 # Antecedentes Relevantes
 
-La población encuestada, pertenece a estudiantes de la Universidad Nacional de Colombia sede Medellín de diferentes carreras, es decir, la mayoria de los sujetos de la muestra son jovenes entre los 18 y los 25 años, además decidimos que solamente aquellos que tenian la posibilidad de saber las estaturas de sus padres entraban a nuestra base de datos, ya que el porceso sería más arduo si tomamos datos donde nos faltan llenar valores en las celdas correspondientes.
+Utilizando un *pie de rey o calibre* tomamos los datos de una cubeta de huevos tipo AA Marca kikes.
 
+Gracias a que las empresas que distribuyen y producen los huevos, tienen muy controlados el peso, altura y diámetro por los controles de calidad, se esperan unos rangos de variabilidad angostos, esto se nota en este experimento pues al ser todos huevos de un mismo tipo y una misma marca se nota el control sobre ellos.
 
 # Variables de respuesta:
 
-En nuestro caso será la estatura del sujeto (Hombre o Mujer) para ajustar un modelo para predecir por medio de nuestras variables predictoras la esturura del sujeto.
+En nuestro caso será el **peso** para ajustar un modelo para predecir por medio de nuestra variable predictora el peso de un huevo.
+
+\hfill \break
 
 # Variable de Control:
 
-En este caso tendremos 3 varibles haciendo de este un modelo de R.L.M.
+Ya que haremos dos modelos tendremos dos variables de control; sin relacionarse entre ellas, es decir, serán dos R.L.S.
 
-1. Estatura del Padre.
-2. Estatura del Madre.
-3. Genero del sujeto.
+-   1er caso: Altura
+
+-   2do Caso: Ancho
+
 
 
 # Ajuste del modelo
@@ -134,7 +143,7 @@ Antes de observar o crear un modelo dado unos puntos, primero haremos un test de
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cor.test(datos$diametro, datos$peso)
 ```
-Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el diámetro de los huevos tomados no tienen una corelación no significativa, más bien tienen una correlación positiva entre los datos, que vamos a ver por medio de un grafico de dispersión:
+Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el diámetro de los huevos tomados no tienen una correlación no significativa, más bien tienen una correlación positiva entre los datos, que vamos a ver por medio de un gráfico  de dispersión:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
@@ -143,7 +152,7 @@ plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
 ```
 
 
-Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras amuentan los valores del diámetro aumenta el peso) apriori.
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras aumentan los valores del diámetro aumenta el peso) a priori.
 
 Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm()` que toma la forma:
 
@@ -152,7 +161,7 @@ modelo1 <- lm(peso~diametro, data=datos)
 summary(modelo1)
 ```
 
-Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con diámetro cero y un valor de peso inicial.
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es lógico ya que sería extraño encontrar huevos con diámetro cero y un valor de peso inicial.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
@@ -198,7 +207,7 @@ confint(modelo1, level = 0.95)
 |-----------|-------|--------|
 | diametro  |0.92584|2.142199|
 
-**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diametro se encuentra en el intervalo $(0.9258416, 2.142199)$.
+**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diámetro se encuentra en el intervalo $(0.9258416, 2.142199)$.
 
 
 ## Tabla ANOVA
@@ -229,7 +238,7 @@ El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de
 |-----------|----------|------------|---------|------------|
 | diametro  | 1.53402  |  0.2969033 |5.166734 |1.7581e-05  |
 
-Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.534 \ gr$, pues en este caso $\beta_1 = 1.534$ Por tanto, la ecuación del modelo queda:
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementará en $1.534 \ gr$, pues en este caso $\beta_1 = 1.534$ Por tanto, la ecuación del modelo queda:
 
 $Y = 0 + 1.534*X$
 
@@ -277,13 +286,13 @@ Vamos a utilizar todas estas variables para estudiar si nuestro modelo cumple la
 
 ## Test de normalidad (test de Kolmogorov-Smirnov)
 
-Empezamos el análisis con un gráfico `qqplot`, que enfrenta los valores reales a los valores que obtendríamos si la distribución fuera normal. Si los datos reales se distribuyen normalmente, estos tendrán la misma distribución que los valores esperados y en el gráfico `qqplot` obtendremos una linea recta en la diagonal.
+Empezamos el análisis con un gráfico `qqplot`, que enfrenta los valores reales a los valores que obtendríamos si la distribución fuera normal. Si los datos reales se distribuyen normalmente, estos tendrán la misma distribución que los valores esperados y en el gráfico `qqplot` obtendremos una línea recta en la diagonal.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 modelo1 %>% myQQnorm()
 ```
-Podemos ver que nuestro $p-valor > 0.05$ por lo que no se rechaza la hipotesís nula donde los datos se distribuyen normal. además por medio de la grafica nos muestra como nuestros puntos se acomodan bien a la recta.
+Podemos ver que nuestro $p-valor > 0.05$ por lo que no se rechaza la hipótesis nula donde los datos se distribuyen normal. además por medio de la gráfica nos muestra como nuestros puntos se acomodan bien a la recta.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 bptest(modelo1)
@@ -294,7 +303,7 @@ No Existe homogeneidad pues la significación es menor de 0.05, la varianza no e
 # Transformación del Modelo
 
 Dado que nuestra varianza no es constante, tendremos que hacer una transformación en nuestro modelo, es decir:
-$Y^* = log(Y) \ \wedge  \ X^* = log(X) $
+$Y^* = log(Y) \ \wedge  \ X^* = log(X)$
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -304,7 +313,7 @@ plot(log(datos$diametro), log(datos$peso), xlab = "diámetro",
 ```
 
 
-Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras amuentan los valores del diámetro aumenta el peso) apriori.
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras aumentan los valores del diámetro aumenta el peso) a priori.
 
 Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm(log())` *(log() <- logaritmo neperiano)*  que toma la forma:
 
@@ -313,7 +322,7 @@ modelo2 <- lm(log(peso)~log(diametro), data=datos)
 summary(modelo2)
 ```
 
-Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con diametro cero y un valor de peso inicial.
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es lógico ya que sería extraño encontrar huevos con diametro cero y un valor de peso inicial.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(log(datos$diametro), log(datos$peso), xlab = "diámetro en mm",
@@ -388,7 +397,7 @@ El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de
 |-------------|----------|------------|---------|--------------|
 |log(diametro)| 1.2133149| 0.2309251  |5.2541481|1.384744e-05  |
 
-Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $1.213 \ gr$, pues en este caso $\beta_1 = 1.213$ Por tanto, la ecuación del modelo queda:
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementará en $1.213 \ gr$, pues en este caso $\beta_1 = 1.213$ Por tanto, la ecuación del modelo queda:
 
 $Y = 0 + 1.213*X$
 
@@ -459,7 +468,7 @@ plot(datos$residuals.modelo1, pch = 20,
 abline(h = cor(datos$peso, datos$diametro))
 ```
 
-Si hubiera una correlación seria, veríamos picos más largos de residuos por encima y por debajo de la línea de correlación. A menos que estos efectos sean fuertes, puede ser difícil de detectar la autocorrelación, por ello realizamos el contraste de Durbin-Watson.
+Si hubiera una correlación sería, veríamos picos más largos de residuos por encima y por debajo de la línea de correlación. A menos que estos efectos sean fuertes, puede ser difícil de detectar la autocorrelación, por ello realizamos el contraste de Durbin-Watson.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 dwtest(peso~diametro, alternative = "two.sided", data = datos)
@@ -493,7 +502,7 @@ Dibujamos las bandas de predicción, que reflejan la incertidumbre sobre futuras
 matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
 ```
 
-Como nuestros datos estan escaladaos a el `log()` vamos a destransformarlos para obtener nuestras predicciones:
+Como nuestros datos están escalados a el `log()` vamos a destransformarlos para obtener nuestras predicciones:
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
@@ -505,7 +514,7 @@ newpred <- exp(pred.ip$fit)
 head(newpred)
 ```
 
-aqui podemos ver en `fit` nuestro diametro ajustado y `lwr` & `upr`
+Aquí podemos ver en `fit` nuestro diámetro ajustado y `lwr` & `upr`
 nuestros intervalos de predicción para estos anchos de un huevo dado.
 
 
@@ -515,7 +524,6 @@ Dado un nuevo conjunto de predictores, x0, debemos evaluar la incertidumbre en e
 
 
 > Nota: Las bandas de confianza reflejan la incertidumbre en la línea de regresión (lo bien que la línea está calculada).
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 pred.ic <- predict(modelo1, dfp, interval = "confidence", se.fit = TRUE, data = datos)
 head(pred.ic$fit)
@@ -523,18 +531,16 @@ head(pred.ic$fit)
 Dibujamos las bandas de confianza, que además reflejan la incertidumbre sobre futuras observaciones:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-matplot(x0, pred.ic$fit, type = "l", xlab = "diametro", ylab = "peso")
+matplot(x0, pred.ic$fit, type = "l", xlab = "diámetro", ylab = "peso")
 ```
 
 Por último podemos hacer un gráfico con la nube de puntos y los dos bandas, la de confianza y la de predicción *(Ferrari & Head, 2010)*.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro", ylab = "peso", col="blue")
-
+plot(datos$diametro, datos$peso, pch = 20, xlab = "diámetro", ylab = "peso", col="blue")
 # Añadimos las bandas
 matlines(dfp$diametro, pred.ic$fit, lty = c(1, 2, 2), 
          lwd = 1.5, col = "red")
-
 matlines(dfp$diametro, pred.ip1$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
 title(main= "R.L.S. Peso vs Diámetro (IC's & IP's)")
@@ -542,11 +548,11 @@ title(main= "R.L.S. Peso vs Diámetro (IC's & IP's)")
 
 Donde:
 
--  Las lineas rojas son Intervalos de Confianza.
+-  Las líneas rojas son Intervalos de Confianza.
 
 - Los puntos azules, son valores predichos.
 
-- y las lineas punteadas negras son el Intervalo de predicción, junto con la linea del modelo quitando la transformación del `log()`.
+- y las líneas punteadas negras son el Intervalo de predicción, junto con la linea del modelo quitando la transformación del `log()`.
 
 
 # Modelo N°2 (Peso\~Altura)
@@ -558,7 +564,8 @@ Antes de observar o crear un modelo dado unos puntos, primero haremos un test de
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cor.test(datos$largo, datos$peso)
 ```
-Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el largo de los huevos tomados tienen una corelación significativa, es decir, una correlación positiva entre los datos, que vamos a ver por medio de un grafico de dispersión:
+
+Como podemos ver se rechaza $H_0$ ya que el $p-valor < 0.05$, es decir nuestros datos peso y el largo de los huevos tomados tienen una correlación significativa, es decir, una correlación positiva entre los datos, que vamos a ver por medio de un gráfico de dispersión:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$largo, datos$peso, xlab = "largo en mm",
@@ -566,7 +573,7 @@ plot(datos$largo, datos$peso, xlab = "largo en mm",
      cex.main = 0.95, pch=20)
 ```
 
-Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras amuentan los valores del diámetro aumenta el peso) apriori.
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras aumentan los valores del diámetro aumenta el peso) a priori.
 
 Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm()` que toma la forma:
 
@@ -575,7 +582,7 @@ modelo3 <- lm(peso~largo, data=datos)
 summary(modelo3)
 ```
 
-Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es logico ya que seria extraño encintrar huevos con altura = cero y un valor de peso inicial.
+Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es lógico ya que sería extraño encontrar huevos con altura = cero y un valor de peso inicial.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$largo, datos$peso, xlab = "diámetro en mm",
@@ -618,9 +625,9 @@ confint(modelo3, level = 0.95)
 
 | Parámetro | 2.5 % | 97.5 % |
 |-----------|-------|--------|
-| diametro  |0.13208|1.505639|
+| diámetro  |0.13208|1.505639|
 
-**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diametro se encuentra en el intervalo $(0.1320814, 1.505639)$.
+**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diámetro se encuentra en el intervalo $(0.1320814, 1.505639)$.
 
 
 ## Tabla ANOVA
@@ -651,7 +658,7 @@ El test ANOVA significativo nos dice si el modelo tiene, en general, un grado de
 |-----------|----------|------------|---------|-------------|
 |   largo   | 0.8188604|  0.3352747 |2.4423569|0.02116101   |
 
-Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementara en $0.82 \ gr$, pues en este caso $\beta_1 = 0.82$ Por tanto, la ecuación del modelo queda:
+Observando la tabla vemos que $\beta_1$ es la pendiente de la recta y representa el cambio en la variable dependiente (peso) asociado al cambio de una unidad en la variable predictora. Si nuestra variable predictora incrementa una unidad, nuestro modelo predice que el peso de un huevo se incrementará en $0.82 \ gr$, pues en este caso $\beta_1 = 0.82$ Por tanto, la ecuación del modelo queda:
 
 $Y = 0 + 0.82*X$
 
@@ -666,7 +673,7 @@ Una vez que tenemos el modelo ajustado procedemos con su diagnóstico, que se re
 - Las hipótesis de media cero, varianza constante, incorrelación y normalidad la comprobamos analíticamente
 
 
-Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura, para esto evaluaremos el siguiente grafico:
+Comenzaremos con el análisis gráfico. Los residuos deberían formar una nube de puntos sin estructura, para esto evaluaremos el siguiente gráfico:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(fitted(modelo3), residuals(modelo3), xlab = "Largo",
@@ -707,7 +714,7 @@ modelo3 %>% myQQnorm()
 ```
 
 
-Podemos ver que nuestro $p-valor > 0.05$ por lo que no se rechaza la hipotesís nula donde los datos se distribuyen normal. además por medio de la grafica nos muestra como nuestros puntos se acomodan bien a la recta.
+Podemos ver que nuestro $p-valor > 0.05$ por lo que no se rechaza la hipótesis nula donde los datos se distribuyen normal. además por medio de la gráfica nos muestra como nuestros puntos se acomodan bien a la recta.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 bptest(modelo3)
@@ -724,7 +731,7 @@ plot(datos$residuals.modelo3, pch = 20, ylab = "Residuos", xlab = "Índices")
 abline(h = cor(datos$peso , datos$largo))
 ```
 
-Si hubiera una correlación seria, veríamos picos más largos de residuos por encima y por debajo de la línea de correlación. A menos que estos efectos sean fuertes, puede ser difícil de detectar la autocorrelación, por ello realizamos el *contraste de Durbin-Watson*.
+Si hubiera una correlación sería, veríamos picos más largos de residuos por encima y por debajo de la línea de correlación. A menos que estos efectos sean fuertes, puede ser difícil de detectar la autocorrelación, por ello realizamos el *contraste de Durbin-Watson*.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 dwtest(peso~largo, alternative = "two.sided", data = datos)
@@ -735,7 +742,7 @@ En el contraste de autocorrelación también aceptamos la hipótesis nula de que
 
 ## Valores atípicos:
 
-Para observar si hay datos atípicos que hacen que nuestro modelo no sea el más optimo. Vamos a realizar un test de valores atípicos (Bonferroni).
+Para observar si hay datos atípicos que hacen que nuestro modelo no sea el más óptimo. Vamos a realizar un test de valores atípicos (Bonferroni).
 
 
 En el caso de observar valores atípicos los pasos a seguir son:
@@ -753,7 +760,7 @@ scatterplot(peso~largo,data = datos,smooth = F, pch=19,
 title(main = "Scatter Plot | Peso vs Largo")
 ```
 
-En la variable `largo` vemos que la mediana no está centrada en la media y contiene un valor atípico en la muestra, los datos no son uniformes. Con la variable `peso` ocurre casí mismo a excepción de ese dato atípico.
+En la variable `largo` vemos que la mediana no está centrada en la media y contiene un valor atípico en la muestra, los datos no son uniformes. Con la variable `peso` ocurre casí lo mismo a excepción de ese dato atípico.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -761,7 +768,7 @@ outlierTest(modelo3, cutoff = 0.05, n.max = 10, order = TRUE)
 influencePlot(modelo3, id.n = 2)
 ```
 
-El gráfico nos indican que la observación número **6** es un valor influyente dado que $D_i > \frac{4}{n}$ donde $D_i$ es la distancica de cook y $n$ es el tamaño de la muestra. Las observaciones **6**,**13** y **18** que vemos en el gráfico son medidas influyentes pero solamente se observa en el test que no hay datos atipicos pero por el $|x|$ de los residuales estandarizados se sabe que la observación **7** podria serlo, con un grafico de las distancias de cook miraremos si se cumple lo anterior.
+El gráfico nos indican que la observación número **6** es un valor influyente dado que $D_i > \frac{4}{n}$ donde $D_i$ es la distancia de cook y $n$ es el tamaño de la muestra. Las observaciones **6**,**13** y **18** que vemos en el gráfico son medidas influyentes pero solamente se observa en el test que no hay datos atípicos pero por el $|x|$ de los residuales estandarizados se sabe que la observación **7** podría serlo, con un gráfico de las distancias de cook miraremos si se cumple lo anterior.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cook3 <- cooks.distance(modelo3)
@@ -770,16 +777,17 @@ halfnorm(cook3, 3, labs = labels3, ylab = "Distancia de Cook")
 abline(h=4/30, lty = 2, col = 2)
 ```
 
-La linea roja representa el corte donde se puede observar si un dato influye o no dentro del modelo, pero con el grafico de influencia nos muestra que la observación #6 no esta alejada de los datos, por lo cual concluimos que no hay datos extraños o atípicos que afecten el modelo.
+La linea roja representa el corte donde se puede observar si un dato influye o no dentro del modelo, pero con el gráfico de influencia nos muestra que la observación #6 no está alejada de los datos, por lo cual concluimos que no hay datos extraños o atípicos que afecten el modelo.
 
 # Predicción
+
 Tenemos un modelo de regresión con la capacidad de relacionar la variable predictora y la variable dependiente. Podemos utilizarlo ahora para predecir eventos futuros de la variable dependiente a través de nuevos valores de la variable predictora.
 
 Para ello debe verificarse alguna de las siguientes condiciones:
 
-1. el valor de la predictora está dentro del rango de la variable original.
+1. El valor de la predictora está dentro del rango de la variable original.
 
-2. si el valor de la predictora está fuera del rango de la original, debemos asegurar que los valores futuros mantendrán el modelo lineal propuesto.
+2. Si el valor de la predictora está fuera del rango de la original, debemos asegurar que los valores futuros mantendrán el modelo lineal propuesto.
 
 ## Predicción de nuevas observaciones
 
@@ -791,7 +799,7 @@ pred.ip.l <- predict(modelo3, dfp.l, interval = "prediction",
 head(pred.ip.l$fit)
 ```
 
-aqui podemos ver según un largo dado en mm de un huevo caul sera su intervalod e predicción de su peso en las dos columnas lower & upper.
+aquí podemos ver según un largo dado en mm de un huevo cuál sera su intervalo de predicción de su peso en las dos columnas lower & upper.
 
 Dibujamos las bandas de predicción, que reflejan la incertidumbre sobre futuras observaciones:
 
@@ -816,19 +824,16 @@ Dibujamos las bandas de confianza, que además reflejan la incertidumbre sobre f
 matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
 ```
 
-Por último podemos hacer un gráfico con la nube de puntos y los dos bandas, la de confianza y la de predicción (Ferrari & Head, 2010).
+Por último podemos hacer un gráfico con la nube de puntos y las dos bandas, la de confianza y la de predicción (Ferrari & Head, 2010).
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 plot(datos$largo, datos$peso, pch = 20, xlab = "largo", ylab = "peso", col="blue")
-
 # Añadimos las bandas
 matlines(dfp.l$largo, pred.ic.l$fit, lty = c(1, 2, 2), 
          lwd = 1.5, col = "red")
-
 matlines(dfp.l$largo, pred.ip.l$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
-
 title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 ```
 
@@ -840,31 +845,31 @@ title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 
 **Figura:**
 
-1.  Grafico de Dispersión diametro vs peso
+1.  gráfico de Dispersión diámetro vs peso
 
-2.  R.L.S de diametro vs peso
+2.  R.L.S de diámetro vs peso
 
-3.  Residuales vs valores ajustados (diametro vs peso)
+3.  Residuales vs valores ajustados (diámetro vs peso)
 
 4.  QQplot de los residuales
 
-5.  Grafico de Dispersión diametro vs peso (Escala Log)
+5.  gráfico de Dispersión diámetro vs peso (Escala Log)
 
-6. R.L.S de diametro vs peso Transformada (`log()`)
+6. R.L.S de diámetro vs peso Transformada (`log()`)
 
-7.   Residuales vs valores ajustados (diametro vs peso) Transformada (`log()`)
+7.   Residuales vs valores ajustados (diámetro vs peso) Transformada (`log()`)
 
 8.  QQplot de los residuales Transformada (`log()`)
 
 9.  Residuales de cada observación
 
-10. Grafico de Intervalos de predicción de la R.L.S `log()`
+10. gráfico de Intervalos de predicción de la R.L.S `log()`
 
-11. Grafico de Intervalos de confianza de la R.L.S `log()`
+11. gráfico de Intervalos de confianza de la R.L.S `log()`
 
 12. R.L.S. Peso vs Largo (IC's & IP's)
 
-13. Grafico de Dispersión largo vs peso
+13. gráfico de Dispersión largo vs peso
 
 14. R.L.S de largo vs peso
 
@@ -878,9 +883,9 @@ title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 
 19. Influence plot (Residuos estandarizados)
 
-20. Grafico de Intervalos de predicción de la R.L.S
+20. gráfico de Intervalos de predicción de la R.L.S
 
-21. Grafico de Intervalos de confianza de la R.L.S
+21. gráfico de Intervalos de confianza de la R.L.S
 
 22. R.L.S. Peso vs Largo (IC's & IP's)
 
@@ -904,7 +909,6 @@ library(lmtest)
 library(graphics)
 datos <- read_delim("eggs.csv", delim = ";") %>% clean_names()
 names(datos)[3] <- "diametro"
-
 myQQnorm <- function(modelo, student = F, ...){
   if(student){
     res <- rstandard(modelo)
@@ -927,139 +931,83 @@ myQQnorm <- function(modelo, student = F, ...){
   text(min(q$x, na.rm = TRUE), max(q$y, na.rm = TRUE)*0.65,
   pos = 4, shapvalue, col = "blue", font = 3)
 }
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 cor.test(datos$diametro, datos$peso)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
      ylab = "Peso en gr", main = "diámetro vs Peso",
      cex.main = 0.95, pch=20)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo1 <- lm(peso~diametro, data=datos)
 summary(modelo1)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$diametro, datos$peso, xlab = "diámetro en mm",
      ylab = "Peso en gr", pch=20)
 abline(modelo1)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 summary(modelo1)$coefficients
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 MSR.ancho <- mean(summary(modelo1)$residuals^2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 confint(modelo1, level = 0.95)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 anova(modelo1)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(fitted(modelo1), residuals(modelo1), xlab = "Ancho",
 ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
 abline(h = 0, lty = 2, col = 2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 datos$fitted.modelo1 <- fitted(modelo1)
 datos$residuals.modelo1 <- residuals(modelo1)
 datos$rstudent.modelo1 <- rstudent(modelo1)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo1 %>% myQQnorm()
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 bptest(modelo1)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(log(datos$diametro), log(datos$peso), xlab = "diámetro",
      ylab = "Peso", main = "diámetro vs Peso (Escala Log)",
      cex.main = 0.95, pch=20)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo2 <- lm(log(peso)~log(diametro), data=datos)
 summary(modelo2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(log(datos$diametro), log(datos$peso), xlab = "diámetro en mm",
      ylab = "Peso en gr", pch=20)
 abline(modelo2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 summary(modelo2)$coefficients
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 MSR.log.ancho <- mean(summary(modelo2)$residuals^2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 confint(modelo2, level = 0.95)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 anova(modelo2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(fitted(modelo2), residuals(modelo2), xlab = "Ancho",
 ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
 abline(h = 0, lty = 2, col = 2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 datos$fitted.modelo2 <- fitted(modelo2)
 datos$residuals.modelo2 <- residuals(modelo2)
 datos$rstudent.modelo2 <- rstudent(modelo2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo2 %>% myQQnorm()
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 bptest(modelo2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$residuals.modelo1, pch = 20,
      ylab = "Residuos", xlab = "Índices")
 abline(h = cor(datos$peso, datos$diametro))
-
-
 ## ----------------------------------------------------------------------
 dwtest(peso~diametro, alternative = "two.sided", data = datos)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
 dfp <- data.frame(diametro = x0)
 pred.ip <- predict(modelo1, dfp, interval = "prediction", se.fit = TRUE, data = datos)
 head(pred.ip$fit)
-
-
 ## ----------------------------------------------------------------------
 matplot(x0, pred.ip$fit, type = "l", xlab = "diametro", ylab = "peso")
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 x0 <- seq(min(datos$diametro), max(datos$diametro), length = 15)
 dfp <- data.frame(diametro = x0)
@@ -1070,146 +1018,93 @@ se.fit = TRUE, data = datos)
 head(pred.ip$fit)
 newpred <- exp(pred.ip$fit)
 head(newpred)
-
-
 ## ----------------------------------------------------------------------
 pred.ic <- predict(modelo1, dfp, interval = "confidence",
 se.fit = TRUE, data = datos)
 head(pred.ic$fit)
-
-
 ## ----------------------------------------------------------------------
 matplot(x0, pred.ic$fit, type = "l", xlab = "diametro", ylab = "peso")
-
-
 ## ----------------------------------------------------------------------
 plot(datos$diametro, datos$peso, pch = 20, xlab = "diametro",
 ylab = "peso", col="blue")
-
 # Añadimos las bandas
 matlines(dfp$diametro, pred.ic$fit, lty = c(1, 2, 2), 
          lwd = 1.5, col = "red")
-
 matlines(dfp$diametro, pred.ip1$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
 title(main= "R.L.S. Peso vs Diámetro (IC's & IP's)")
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 cor.test(datos$largo, datos$peso)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$largo, datos$peso, xlab = "largo en mm",
      ylab = "Peso en gr", main = "largo vs Peso",
      cex.main = 0.95, pch=20)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo3 <- lm(peso~largo, data=datos)
 summary(modelo3)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$largo, datos$peso, xlab = "diámetro en mm",
      ylab = "Peso en gr", pch=20)
 abline(modelo3)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 summary(modelo3)$coefficients
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 MSR.largo <- mean(summary(modelo3)$residuals^2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 confint(modelo3, level = 0.95)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 anova(modelo3)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(fitted(modelo3), residuals(modelo3), xlab = "Largo",
 ylab = "Residuales", main = "Residuales vs. valores ajustados",pch=20)
 abline(h = 0, lty = 2, col = 2)
-
-
 ## ----message=FALSE, warning=FALSE, include=FALSE-----------------------
 datos$fitted.modelo3 <- fitted(modelo3)
 datos$residuals.modelo3 <- residuals(modelo3)
 datos$rstudent.modelo3 <- rstudent(modelo3)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 modelo3 %>% myQQnorm()
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 bptest(modelo3)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 plot(datos$residuals.modelo3, pch = 20, ylab = "Residuos", xlab = "Índices")
 abline(h = cor(datos$peso , datos$largo))
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 dwtest(peso~largo, alternative = "two.sided", data = datos)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 scatterplot(peso~largo,data = datos,smooth = F, pch=19,
             regLine = F, xlab = "Largo", ylab = "Peso")
 title(main = "Scatter Plot | Peso vs Largo")
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 outlierTest(modelo3, cutoff = 0.05, n.max = 10, order = TRUE)
 influencePlot(modelo3, id.n = 2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 cook3 <- cooks.distance(modelo3)
 labels3 <- rownames(datos)
 halfnorm(cook, 3, labs = labels, ylab = "Distancia de Cook")
 abline(h=4/30, lty = 2, col = 2)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 x0.l <- seq(min(datos$largo), max(datos$largo), length = 15)
 dfp.l <- data.frame(largo = x0.l)
 pred.ip.l <- predict(modelo3, dfp.l, interval = "prediction",
                      se.fit =TRUE, data = datos)
 head(pred.ip.l$fit)
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 matplot(x0.l, pred.ip.l$fit, type = "l", xlab = "largo", ylab = "peso")
-
-
 ## ----echo=FALSE, message=FALSE, warning=FALSE--------------------------
 pred.ic.l <- predict(modelo3, dfp.l, interval = "confidence",
 se.fit = TRUE, data = datos)
 head(pred.ic.l$fit)
-
 ## ----------------------------------------------------------------------
 matplot(x0.l, pred.ic.l$fit, type = "l", xlab = "largo", ylab = "peso")
-
 ## ----------------------------------------------------------------------
 plot(datos$largo, datos$peso, pch = 20, xlab = "largo",
 ylab = "peso", col="blue")
-
 # Añadimos las bandas
 matlines(dfp.l$largo, pred.ic.l$fit, lty = c(1, 2, 2), 
          lwd = 1.5, col = "red")
-
 matlines(dfp.l$largo, pred.ip.l$fit, lty = c(1, 3, 3),
          lwd = 1.5, col= "black")
-
 title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 ```
 
@@ -1240,7 +1135,3 @@ title(main= "R.L.S. Peso vs Largo (IC's & IP's)")
 **[12]** (SCG), S. S. C. G. (2013). Multiple linear regression (r). San Diego State University. Retrieved October 13, 2014, from <http://scg.sdsu.edu/mlr-r/>
 
 **[13]** SPSS. (2007). Análisis de regresión lineal: El procedimiento regresión lineal. IBM SPSS Statistics. Retrieved October 13, 2014, from <http://pendientedemigracion.ucm.es/info/socivmyt/paginas/D_departamento/materiales/analisis_datosyMultivariable/18reglin_SPSS.pdf>
-
-
-
-
