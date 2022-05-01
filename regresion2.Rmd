@@ -20,8 +20,7 @@ library(ppcor)
 
 ```{r}
 estaturas <- read_csv("estaturas.csv")
-
-colnames(estaturas) <- c("est","genero","exp","est_ma","est_pa","ced",
+colnames(estaturas) <- c("est","genero","exp","est_ma", "est_pa","ced", 
                          "ced_ma","ced_pa","exp_pa","exp_ma")
 kable(rbind(head(estaturas, n = 5),
             rep(".", ncol(estaturas)), rep(".", ncol(estaturas)),
@@ -75,11 +74,6 @@ Para definir el modelo numero 1 vamos a usar como variables explicativas estatur
 
 Dado a que tenemos más de una variable explicativa se procede a usar los coeficientes de la correlación parcial y múltiple.
 
-```{r}
-pcor.test(esta$est_ma)
-```
-
-
 
 ```{r}
 modelo1 <- lm(data = estaturas, est_sujeto ~  genero+est_madre+est_padre)
@@ -87,8 +81,17 @@ summary(modelo1)
 ```
 Vemos que la mediana de los residuos es cercana a 0, lo cual es muy bueno pues queremos que los residuos tengan media cero.
 
-Observando los coeficientes vemos que según el estadístico t sólo son significativas las variables estatura del padre y de la madre <!-- confirmar --> y procedemos a aplicar el método de selección de modelos para ver si eliminamos alguna variable.
+```{r}
+kable(summary(modelo1)$coefficients)
+```
+Teniendo en cuenta esta información, se plantea la ecuación de regresión ajustada que está dada por:
+$$\widehat{Y}_i = 381.5305787 + 5.7220927X_{i1} - -0.7518766X_{i2} - 0.5417256X_{i3} , \quad i = 1, 2, \ldots, 30$$
 
-Aún así, el modelo con todas las variables tiene un error estándar de !!!!! y una $R^2 = 0.3025$ 3.4.2
+
+## Significancia de los parámetros del modelo.
+
+Si tenemos en cuenta el siguiente juego de hipótesis para medir la significancia de los parámetros:
+$$\begin{array}{l} H_0: \beta_j = 0\\ H_1: \beta_j \ne 0 \end{array}\ \text{ para }\ j = 0, 1, \ldots, 3.$$
+y tomamos los valores del estadístico de prueba y el valor-P para la prueba *(Columnas 4 y 5 de la Tabla 2)*, se puede concluir a un nivel de significancia de $\alpha = 0.05$ que los parámetros individuales $\beta_0$, $\beta_2$ y $\beta_3$ son significativos en presencia de los demás parámetros, por otro lado individualmente $\beta_1$ no lo es cuando los demás parámetros del modelos están presentes.
 
 
