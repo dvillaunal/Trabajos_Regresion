@@ -16,6 +16,8 @@ Crear un modelo ajustado de R.L.S. por el cual predecimos el peso de los huevos 
 
 ### punto 2:
 
+[https://rpubs.com/dvillaunal/punto3_RL](https://rpubs.com/dvillaunal/punto3_RLM)
+
 Crear un modelo ajustado de R.L.M. por el cual se pueda predecir la estatura de un individuo (discrimiando por genero) sabiendo las estaturas de los padres (madre y padre) utilizando el software estadístico *R*.
 
 
