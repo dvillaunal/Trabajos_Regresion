@@ -10,7 +10,7 @@ Trabajos de Analisís de Regresión:
 
 ### punto 1:
 
-<rpubs.com/dvillaunal/punto1_RLS>
+[rpubs.com/dvillaunal/punto1_RLS](rpubs.com/dvillaunal/punto1_RLS)
 
 Crear un modelo ajustado de R.L.S. por el cual predecimos el peso de los huevos (de gallina) por medio de la altura o el diámetro de este utilizando el software estadístico *R*
 
