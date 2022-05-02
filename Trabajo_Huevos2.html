@@ -267,14 +267,14 @@ estándar y p-valores asociados con cada coeficiente</p>
 1.53402*diámetro\)</span></p>
 <p>donde los valores entre paréntesis indican los errores estándar de
 cada coeficiente. Además, puesto que los p-valores son mayores y menores
-a 0.05, podemos concluir que:</p>
+a 0.05, respectivamente, podemos concluir que:</p>
 <ol style="list-style-type: decimal">
 <li><p>En este caso no tiene sentido analizar el valor de la constante
 para diámetro = 0, ya que pertenecería a un supuesto donde el huevo
-(imaginariamente) exista, de ahí que el peso del huevo para diámetro = 0
-sea de 0, menor que cualquiera de los datos de nuestro conjunto, en
-conclusión un huevo con diámetro = 0 no existe y más si su peso =
-0.</p></li>
+exista (imaginariamente hablando), de ahí que el peso del huevo para
+diámetro = 0 sea de 0, menor que cualquiera de los datos de nuestro
+conjunto, en conclusión un huevo con diámetro = 0 no existe y más si su
+peso = 0.</p></li>
 <li><p>Existen evidencias estadísticas suficientes para considerar que
 hay una relación lineal entre diámetro y peso. Dicha relación es
 positiva cuando aumenta el diámetro de un huevo dado aumente el peso del
@@ -543,8 +543,8 @@ estándar y p-valores asociados con cada coeficiente</p>
 ## log(diametro)  1.2133149  0.2309251  5.2541481 1.384744e-05</code></pre>
 <p>El resultado del ajuste es:</p>
 <p><code>(0.8644818)</code> <code>(0.2309251)</code></p>
-<p><span class="math inline">\(Peso \ = \ 0 +
-1.2133149*diámetro\)</span></p>
+<p><span class="math inline">\(log(Peso) \ = \ 0 +
+1.2133149*log(diámetro)\)</span></p>
 <p>donde los valores entre paréntesis indican los errores estándar de
 cada coeficiente. Además, puesto que los p-valores son mayores y menores
 a 0.05, podemos concluir que:</p>
@@ -559,7 +559,7 @@ conclusión un huevo con diámetro = 0 no existe y más si su peso =
 hay una relación lineal entre diámetro y peso. Dicha relación es
 positiva cuando aumenta el diámetro de un huevo dado aumente el peso del
 mismo. Además vemos que por cada <span class="math inline">\(mm\)</span>
-que aumenta el diámetro de un huevo, aumenta el peso en <span class="math inline">\(1.21 \ gramos\)</span>.</p></li>
+que aumenta el diámetro de un huevo, aumenta el peso en <span class="math inline">\(e^{1.21} \approx 3.35 \ gramos\)</span>.</p></li>
 <li><p>El error estándar residual estimado (s) es de <span class="math inline">\(0.001\)</span>. Este valor es muy importante, es
 un medidor de la calidad (precisión) del modelo. Además nos vamos a
 basar en él para calcular los intervalos de confianza para el
@@ -581,7 +581,7 @@ significación al 95%</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td>diametro</td>
+<td><span class="math inline">\(log(diametro)\)</span></td>
 <td>0.74028</td>
 <td>1.686344</td>
 </tr>
@@ -863,7 +863,7 @@ junto con la linea del modelo quitando la transformación del
 <h2>Ajuste del modelo:</h2>
 <p>Antes de observar o crear un modelo dado unos puntos, primero haremos
 un test de correlación de los datos para estudiar el grado de variación
-conjunta entre el diámetro y peso de los huevos:</p>
+conjunta entre la altura y el peso de los huevos:</p>
 <pre><code>## 
 ##  Pearson&#39;s product-moment correlation
 ## 
@@ -908,7 +908,7 @@ realizar el ajuste del modelo. Para ello usamos la función
 <p>Como podemos ver nuestro intercepto dado el <span class="math inline">\(p-valor &gt; 0.05\)</span> decimos que el
 intercepto tengan valor a cero, esto es lógico ya que sería extraño
 encontrar huevos con altura = cero y un valor de peso inicial.</p>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>En primer lugar deseamos obtener los estimadores puntuales, errores
 estándar y p-valores asociados con cada coeficiente</p>
 <pre><code>##               Estimate Std. Error   t value   Pr(&gt;|t|)
@@ -955,14 +955,14 @@ al 95%</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td>diámetro</td>
+<td>altura</td>
 <td>0.13208</td>
 <td>1.505639</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Interpretamos los intervalos:</strong> con una probabilidad
-del 95%, el efecto asociado con diámetro se encuentra en el intervalo
+del 95%, el efecto asociado con el largo se encuentra en el intervalo
 <span class="math inline">\((0.1320814, 1.505639)\)</span>.</p>
 </div>
 <div id="tabla-anova-2" class="section level2">

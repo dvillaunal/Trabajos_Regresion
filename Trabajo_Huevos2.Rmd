@@ -181,9 +181,9 @@ El resultado del ajuste es:
 
 $Peso \ = \ 0 + 1.53402*diámetro$
 
-donde los valores entre paréntesis indican los errores estándar de cada coeficiente. Además, puesto que los p-valores son mayores y menores a 0.05, podemos concluir que:
+donde los valores entre paréntesis indican los errores estándar de cada coeficiente. Además, puesto que los p-valores son mayores y menores a 0.05, respectivamente, podemos concluir que:
 
-1. En este caso no tiene sentido analizar el valor de la constante para diámetro = 0, ya que pertenecería a un supuesto donde el huevo (imaginariamente) exista, de ahí que el peso del huevo para diámetro = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con diámetro = 0 no existe y más si su peso = 0.
+1. En este caso no tiene sentido analizar el valor de la constante para diámetro = 0, ya que pertenecería a un supuesto donde el huevo exista (imaginariamente hablando), de ahí que el peso del huevo para diámetro = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con diámetro = 0 no existe y más si su peso = 0.
 
 2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre diámetro y peso. Dicha relación es positiva cuando aumenta el diámetro de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $1.53 \ gramos$.
 
@@ -339,13 +339,13 @@ El resultado del ajuste es:
 
 `(0.8644818)` `(0.2309251) `
 
-$Peso \ = \ 0 + 1.2133149*diámetro$
+$log(Peso) \ = \ 0 + 1.2133149*log(diámetro)$
 
 donde los valores entre paréntesis indican los errores estándar de cada coeficiente. Además, puesto que los p-valores son mayores y menores a 0.05, podemos concluir que:
 
 1. En este caso no tiene sentido analizar el valor de la constante para diámetro = 0, ya que pertenecería a un supuesto donde el huevo (imaginariamente) exista, de ahí que el peso del huevo para diámetro = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con diámetro = 0 no existe y más si su peso = 0.
 
-2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre diámetro y peso. Dicha relación es positiva cuando aumenta el diámetro de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $1.21 \ gramos$.
+2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre diámetro y peso. Dicha relación es positiva cuando aumenta el diámetro de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $e^{1.21} \approx 3.35 \ gramos$.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 MSR.log.ancho <- mean(summary(modelo2)$residuals^2)
@@ -362,9 +362,9 @@ Obtenemos los correspondientes intervalos de confianza para el parámetro $m$ de
 confint(modelo2, level = 0.95)
 ```
 
-| Parámetro | 2.5 % | 97.5 % |
-|-----------|-------|--------|
-| diametro  |0.74028|1.686344|
+| Parámetro     | 2.5 % | 97.5 % |
+|---------------|-------|--------|
+|$log(diametro)$|0.74028|1.686344|
 
 **Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diametro se encuentra en el intervalo $(0.7402862, 1.686344)$.
 
@@ -559,7 +559,7 @@ Donde:
 
 ## Ajuste del modelo:
 
-Antes de observar o crear un modelo dado unos puntos, primero haremos un test de correlación de los datos para estudiar el grado de variación conjunta entre el diámetro y peso de los huevos:
+Antes de observar o crear un modelo dado unos puntos, primero haremos un test de correlación de los datos para estudiar el grado de variación conjunta entre la altura y el peso de los huevos:
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 cor.test(datos$largo, datos$peso)
@@ -585,7 +585,7 @@ summary(modelo3)
 Como podemos ver nuestro intercepto dado el $p-valor > 0.05$ decimos que el intercepto tengan valor a cero, esto es lógico ya que sería extraño encontrar huevos con altura = cero y un valor de peso inicial.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plot(datos$largo, datos$peso, xlab = "diámetro en mm",
+plot(datos$largo, datos$peso, xlab = "largo en mm",
      ylab = "Peso en gr", pch=20)
 abline(modelo3)
 ```
@@ -625,9 +625,9 @@ confint(modelo3, level = 0.95)
 
 | Parámetro | 2.5 % | 97.5 % |
 |-----------|-------|--------|
-| diámetro  |0.13208|1.505639|
+| altura    |0.13208|1.505639|
 
-**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con diámetro se encuentra en el intervalo $(0.1320814, 1.505639)$.
+**Interpretamos los intervalos:** con una probabilidad del 95%, el efecto asociado con el largo se encuentra en el intervalo $(0.1320814, 1.505639)$.
 
 
 ## Tabla ANOVA
