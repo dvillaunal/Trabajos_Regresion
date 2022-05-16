@@ -1,0 +1,276 @@
+---
+title: 'Trabajo N°1 Punto 1: Ajuste de un modelo de R.L.M'
+author:
+- Daniel Villa 1005087556
+- Juan Pablo Vanegas 1000640165
+subtitle: |
+  | Universidad Nacional de Colombia
+  | Analisís de Regresión 2022-1S
+  | Medellín, Colombia
+  | 2022
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    df_print: kable
+    toc: yes
+  toc_float:
+    toc_collapsed: yes
+    toc_depth: 3
+    number_sections: yes
+  pdf_document:
+    keep_tex: yes
+    latex_engine: xelatex
+    number_sections: yes
+    df_print: kable
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{longtable}
+- \usepackage{array}
+- \usepackage{multirow}
+- \usepackage{wrapfig}
+- \usepackage{float}
+- \usepackage{colortbl}
+- \usepackage{pdflscape}
+- \usepackage{tabu}
+- \usepackage{threeparttable}
+- \usepackage{threeparttablex}
+- \usepackage[normalem]{ulem}
+- \usepackage{makecell}
+- \usepackage{xcolor}
+editor_options:
+  chunk_output_type: console
+---
+
+\centering ![](templates/EscudoUN.png)
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+
+Este conjunto de datos contiene información sobre coches usados. La descripción de cada característica se explica a continuación:
+
+-   `nombre`: Nombre de los coches
+
+-   `ano`: Año del coche cuando se compró
+
+-   `precio`: Precio al que se vende el coche
+
+-   `kilometros`: Número de kilómetros recorridos por el coche
+
+-   `combustible`: Tipo de combustible del coche (gasolina / diesel / GNC / GLP)
+
+-   `tipo_vendedor`: Indica si el coche es vendido por un particular o por un concesionario
+
+-   `transmisión`: Transmisión del coche (automática/manual)
+
+-   `Propietario`: Número de propietarios anteriores
+
+-   `kilometraje`: Kilometraje del coche (kmpl)
+
+-   `Motor`: Capacidad del motor del coche (CC)
+
+-   `max_power`: Potencia máxima del motor (CV)
+
+-   `asientos`: número de asientos del coche
+
+Este conjunto de datos se utilizará para predecir el precio de venta de los coches usados, por lo que estableceremos el `precio` como variable objetivo.
+
+# Preparación de datos
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+## Importar paquetes requeridos
+library(readr)
+library(tidyverse)
+library(kableExtra)
+library(magrittr)
+library(ggExtra)
+library(GGally)
+library(janitor)
+library(tidystats)
+library(car)
+library(faraway)
+library(lmtest)
+library(caret)
+library(data.table)
+library(MLmetrics)
+library(performance)
+library(mctest)
+```
+
+## Cargar conjunto de datos
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+carros <- read_csv("Trabajo1/carros.csv")
+
+kable(rbind(head(carros, n = 5),rep(".", ncol(carros)),
+            rep(".", ncol(carros)),rep(".", ncol(carros)),
+            tail(carros, n = 5)),digits = 30, align = "c")
+```
+
+## Estructuración de la base de datos
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+glimpse(carros)
+```
+
+Los datos tienen 100 filas y 12 columnas. La Nombre son identificadores únicos para cada coche, así que podemos eliminarlos porque no necesitamos esa información.
+
+Antes de seguir adelante, primero tenemos que asegurarnos de que nuestros datos son del tipo correcto. Hay algunas características que tenemos que limpiar y poner en el tipo correcto. Lo que hacemos para el siguiente paso es:
+
+-   Cambiar los tipos de datos de caracter a factores:
+
+    -   `combustible`
+    -   `tipo_vendedor`
+    -   `transmisión`
+    -   `Dueño`
+    -   `Asientos`
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+carros <- carros[-1]
+
+carros %<>% clean_names()
+
+carros$combustible %<>% as.factor()
+
+levels(carros$combustible) <- c("GNC","diesel","GLP","gasolina")
+
+carros$tipo_vendedor %<>%  as.factor()
+
+carros$transmicion %<>%  as.factor()
+
+carros$duenos %<>%  as.factor()
+
+# carros$asientos %<>%  as.factor()
+```
+
+# Análisis exploratorio de datos
+
+El análisis exploratorio de datos es una fase en la que exploramos las variables de los datos, para ver si hay algún patrón que pueda indicar algún tipo de correlación entre las variables.
+
+En primer lugar, queremos conocer la distribución de nuestra variable objetivo, que es el `precio`.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+hist(carros$precio, col="darkblue")
+```
+
+Del histograma se desprende que la mayoría de los precios de venta de los coches usados son inferiores a $1.000.000$
+
+```{r}
+ggcorr(carros, label = T)
+```
+
+El gráfico muestra que `kilometros` y el `kilometraje` tienen una correlación negativa con el `precio`, en otro caso, el precio de venta tiene una fuerte correlación con la `potencia` (0,8)
+
+# Modelo
+
+El primer modelo que podemos hacer es utilizar todas las variables (excepto `precio`) como variables predictoras.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+model0 <- lm(precio~1, carros)
+model_all <- lm(precio~., carros)
+summary(model_all)
+```
+
+El resumen de `model_all` muestra mucha información. Pero por ahora, es mejor centrarse en la $Pr(>|t|)$. Esta columna muestra el nivel de significación de la variable para el modelo. Si el valor es inferior a $0.05$, **podemos asumir con seguridad que la variable tiene un efecto significativo en el modelo**.
+
+# Selección de características
+
+La selección de características es la etapa en la que se seleccionan las variables que se van a utilizar, y se trabaja evaluando y reduciendo las variables no significativas y prestando atención al valor del $AIC$. El $AIC$ (Criterio de Información de Akaike) es un valor que representa una gran cantidad de información perdida en el modelo, **cuanto menor sea el valor del** $AIC$**, mejor será el modelo**.
+
+Hay tres pasos de selección de características que podemos aplicar:
+
+1.  **eliminación de los predictores**: De todos los predictores utilizados, se evalúa el modelo reduciendo las variables predictoras de forma que se obtenga el modelo con el menor $AIC$ (Criterio de Información de Akaike)..
+
+2.  **selección hacia delante**: Del modelo sin predictor, luego se evalúa el modelo añadiendo variables predictoras de forma que se obtenga el modelo con el menor $AIC$.
+
+3. __ambos__: A partir del modelo realizado, se puede evaluar el modelo añadiendo o restando variables predictoras de forma que se obtenga el modelo con el menor $AIC$.
+
+## Backward Elimination
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+model_back <- step(model_all,direction = "backward", trace = 0)
+summary(model_back)
+```
+
+## Forward Elimiination
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+model_forward <- step(model0,
+                      direction = "forward",
+                      scope = list(lower = model0,upper = model_all),
+                      trace = 0)
+summary(model_forward)
+```
+
+
+## Both
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+model_both <- step(model0,
+                   direction = "both",
+                   scope =list(lower = model0,upper = model_all),
+                   trace = 0)
+summary(model_both)
+```
+
+
+## Comparación de Modelos
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+compare_performance(model_all,model_back,model_forward,model_both)
+```
+
+Después de realizar la selección de características de tres maneras, resulta que no hay ningún cambio significativo en el `model_all` vs los otros 3 modelos tanto por los valores de AIC, R2 (adj.) y RMSE, entonces el modelo que utilizaremos es `model_all`.
+
+
+# Supuesto de regresión lineal
+
+Como modelo estadístico, la regresión lineal tiene varios supuestos que deben cumplirse para que la interpretación obtenida no esté sesgada. Este supuesto sólo debe cumplirse si el propósito de hacer un modelo de regresión lineal es querer una interpretación o ver el efecto de cada predictor sobre el valor de la variable objetivo. Si sólo se quiere utilizar la regresión lineal para hacer predicciones, no es necesario que se cumplan los supuestos del modelo.
+
+## Linealidad
+
+La linealidad significa que la variable objetivo con su predictor tiene una relación lineal o la relación es una línea recta. Además, el efecto o valor del coeficiente entre las variables es aditivo. Si no se cumple esta linealidad, automáticamente todos los valores de los coeficientes que obtengamos no son válidos porque el modelo supone que el patrón que vamos a realizar es lineal.
+
+## Normalidad del residuo (normalidad del residuo)
+
+El supuesto de normalidad significa que los residuos del modelo de regresión lineal deben estar distribuidos normalmente porque esperamos obtener residuos cercanos al valor cero
+
+## Homocedasticidad del residuo
+
+La homocedasticidad indica que el residuo o error es constante o no forma un determinado patrón. Si el error forma un determinado patrón, como una línea lineal o cónica, lo llamamos heterocedasticidad y afectará al valor del error estándar en una estimación/coeficiente de predictor sesgado (demasiado estrecho o demasiado ancho). La homocedasticidad puede comprobarse visualmente viendo si existe un patrón entre los resultados predichos de los datos y el valor residual.
+
+## No hay multicolinealidad
+
+La multicolinealidad se produce cuando las variables predictoras utilizadas en el modelo tienen una fuerte relación. no se espera que un buen modelo tenga multicolinealidad. La presencia o ausencia de multicolinealidad puede verse a partir del valor del VIF (Factor de Inflación de la Varianza). Cuando el valor del VIF es superior a 10, significa que hay multicolinealidad
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+win.graph()
+check_model(model_forward)
+```
+
+```{r}
+num_data <- carros %>% select(is.numeric) %>% sapply(scale)
+fac_data <- carros %>% select(is.factor)
+car_scale <- data.frame(num_data,fac_data)
+
+model_scale <- lm(precio~., car_scale)
+summary(model_scale)
+bptest(model_scale)
+```
+
+
+
+
+
+
+

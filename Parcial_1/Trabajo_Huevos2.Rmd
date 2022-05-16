@@ -68,7 +68,8 @@ library(car)
 library(faraway)
 library(lmtest)
 library(graphics)
-datos <- read_delim("eggs.csv", delim = ";") %>% clean_names()
+datos <- read_delim("Parcial_1/eggs.csv", delim = ";") %>%
+  clean_names()
 names(datos)[3] <- "diametro"
 myQQnorm <- function(modelo, student = F, ...){
   if(student){
@@ -573,7 +574,7 @@ plot(datos$largo, datos$peso, xlab = "largo en mm",
      cex.main = 0.95, pch=20)
 ```
 
-Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras aumentan los valores del diámetro aumenta el peso) a priori.
+Como podemos ver los datos si tienen en algún grado una correlación positiva (mientras aumentan los valores del largo aumenta el peso) a priori.
 
 Una vez visto que existe relación entre las variables pasamos a realizar el ajuste del modelo. Para ello usamos la función `lm()` que toma la forma:
 
@@ -605,7 +606,7 @@ donde los valores entre paréntesis indican los errores estándar de cada coefic
 
 1. En este caso no tiene sentido analizar el valor de la constante para largo = 0, ya que pertenecería a un supuesto donde el huevo (imaginariamente) exista, de ahí que el peso del huevo para largo = 0 sea de 0, menor que cualquiera de los datos de nuestro conjunto, en conclusión un huevo con largo = 0 no existe y más si su peso = 0.
 
-2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre largo y peso. Dicha relación es positiva cuando aumenta el largo de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el diámetro de un huevo, aumenta el peso en $0.82 \ gramos$.
+2. Existen evidencias estadísticas suficientes para considerar que hay una relación lineal entre largo y peso. Dicha relación es positiva cuando aumenta el largo de un huevo dado aumente el peso del mismo. Además vemos que por cada $mm$ que aumenta el largo de un huevo, aumenta el peso en $0.82 \ gramos$.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 MSR.largo <- mean(summary(modelo3)$residuals^2)
@@ -644,7 +645,7 @@ Observamos que la variabilidad explicada por el modelo, `SSM=31.4828`, es inferi
 
 tenemos que el $p-valor$ asociado con el estadístico F es inferior a 0.05.
 
-La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su diámetro.
+La conclusión es que hay evidencias suficientes para poder rechazar la hipótesis nula, $H_0: F=1$ y por tanto, resulta posible establecer un modelo de regresión lineal para explicar el comportamiento del peso de un huevo en función de su largo.
 
 ## Coeficiente de determinación
  
