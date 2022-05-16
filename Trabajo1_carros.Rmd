@@ -230,7 +230,7 @@ summary(model_both)
 compare_performance(model_all,model_back,model_forward,model_both)
 ```
 
-Después de realizar la selección de características de tres maneras, resulta que no hay ningún cambio significativo en el `model_all` vs los otros 3 modelos tanto por los valores de AIC, R2 (adj.) y RMSE, entonces el modelo que utilizaremos es `model_all`.
+Después de realizar la selección de características de tres maneras, resulta que no hay ningún cambio significativo en el `model_all` vs los otros 3 modelos tanto por los valores de AIC, R2 (adj.) y RMSE, entonces el modelo que utilizaremos es `model_forward`.
 
 
 # Supuesto de regresión lineal
@@ -254,23 +254,75 @@ La homocedasticidad indica que el residuo o error es constante o no forma un det
 La multicolinealidad se produce cuando las variables predictoras utilizadas en el modelo tienen una fuerte relación. no se espera que un buen modelo tenga multicolinealidad. La presencia o ausencia de multicolinealidad puede verse a partir del valor del VIF (Factor de Inflación de la Varianza). Cuando el valor del VIF es superior a 10, significa que hay multicolinealidad
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-win.graph()
 check_model(model_forward)
 ```
 
-```{r}
+# Modelo con datos escalados
+
+La imagen anterior muestra que los supuestos que se cumplen son sólo la multicolinealidad, mientras que los otros no son apropiados. Ahora intentaré hacer un escalado de datos en las variables predictoras y en la variable objetivo para superar la normalidad del residuo y la heterocedasticidad
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
 num_data <- carros %>% select(is.numeric) %>% sapply(scale)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 fac_data <- carros %>% select(is.factor)
 car_scale <- data.frame(num_data,fac_data)
 
 model_scale <- lm(precio~., car_scale)
 summary(model_scale)
-bptest(model_scale)
 ```
 
 
+Después de crear un modelo con datos que han sido escalados, resulta que los resultados dados no son muy diferentes del modelo_todo y producen un mismo valor $R^2$ de $\approx 0.80$, y los supuestos que se cumplen son sólo la multicolinealidad. Por esta razón, se recomienda utilizar otros modelos de regresión en estos datos como la regresión polinómica, la regresión de bosque aleatorio, etc.
 
 
+# Predicciones
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+pred <- predict(model_forward, newdata = carros,
+                interval = "prediction", level = 0.95)
+head(pred)
+```
+
+# Evaluación
+
+Después de hacer predicciones a partir de los datos, debemos averiguar si el modelo de aprendizaje automático que se ha creado puede producir predicciones con el menor error. Hay varias formas de realizar la evaluación del modelo de regresión. Para realizar la evaluación del modelo de regresión, hay varias métricas que se pueden utilizar:
+
+- R-cuadrado y R-cuadrado adjunto: para determinar lo bien que el modelo explica la varianza de la variable objetivo
+
+- Valor de error : para ver si la predicción realizada produce el menor valor de error
+
+Los valores de error que utilizaremos para ver el rendimiento del modelo son MAE (error absoluto medio) y MAPE. El MAE muestra la media de los valores de error absoluto, mientras que el MAPE muestra la magnitud de la desviación en términos porcentuales.
+
+$MAE= \frac{\sum|\hat{y}-y|}{n}$
+
+$MAPE = \frac{1}{n}\sum\frac{|\hat{y}-y|}{y}$
 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+RNGkind(sample.kind = "Rounding")
+set.seed(123)
+intrain <- sample(x=nrow(carros), size = nrow(carros)*0.8)
+car_train <- carros[intrain,]
+car_test <- carros[-intrain,]
 
+min <- min(carros$precio)
+max <- max(carros$precio)
+mape <- MAPE(y_pred = pred, y_true = car_test$precio)
+mae <- MAE(y_pred = pred, y_true = car_test$precio)
+
+value <- c(min,max,mape,mae)
+eval <- as.data.frame(value)
+row.names(eval) <- c("min","max","mape","mae")
+eval
+```
+
+Si se observa el MAPE (0.69), significa que el error en la predicción de este modelo es de alrededor del 69%, por lo que se puede decir que la regresión lineal no es adecuada para predecir el precio de venta de los coches usados en estos datos.
+
+# Conclusión
+
+Los datos son un historial de ventas de coches usados procedentes de kaggle.com. El objetivo de este análisis es crear un modelo que pueda predecir el precio de venta de un coche usado basándose en varias características existentes. se han utilizado modelos de regresión lineal y modelos de sintonía mediante la selección de características, pero siguen dando los mismos resultados. sólo se cumple un supuesto de la regresión lineal, la multicolinealidad, mientras que no se cumplen los supuestos de normalidad del residuo, linealidad y homocedasticidad.
+
+De los resultados del análisis realizado concluyo que la regresión lineal no es adecuada para predecir el precio de venta de los coches usados en estos datos, se recomienda utilizar otros modelos de regresión en estos datos como la regresión polinómica, la regresión de bosque aleatorio, etc.
